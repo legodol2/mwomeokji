@@ -54,7 +54,7 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
       </Section>
 
       <Section title="자주 가는 마트"
-        hint={`여러 곳을 고르면 그중 가장 싼 곳으로 계산합니다. 지금은 ${MART[result.cfg.mart].n} 기준.`}>
+        hint={`여러 곳을 고르면 그중 가장 싼 곳으로 계산합니다. 지금은 ${MART[result.cfg.mart].n} 기준. 마트별 금액은 실제 조사값이 아닌 추정치입니다.`}>
         <Pressable onPress={()=>set(s=>({ ...s, marts: picked.length === marts.length ? [] : [...marts] }))}
           style={{ alignSelf:'flex-start', marginBottom:10, paddingHorizontal:13, paddingVertical:7,
                    borderRadius:999, borderWidth:1, borderColor:t.line2 }}>

@@ -51,7 +51,7 @@ export default function Onboarding({ draft, setDraft, t, onFinish }){
           <ScrollView style={{ flex:1 }} contentContainerStyle={{ padding:20, paddingBottom:24 }}>
             {step === 1 && (
               <>
-                <Head title="어느 마트에 가세요?" hint={`${reg.n}에서 갈 수 있는 곳입니다. 여러 곳을 고르면 그중 가장 싼 곳으로 계산하고, 나머지는 비교해서 보여 드립니다.`} />
+                <Head title="어느 마트에 가세요?" hint={`${reg.n}에서 갈 수 있는 곳입니다. 여러 곳을 고르면 그중 가장 싼 곳으로 계산하고, 나머지는 비교해서 보여 드립니다. 마트별 가격은 실제 조사값이 아닌 추정치입니다.`} />
                 <Pressable onPress={()=>setDraft(d=>({ ...d, marts: d.marts.length === reg.m.length ? [] : [...reg.m] }))}
                   style={{ alignSelf:'flex-start', marginBottom:12, paddingHorizontal:14, paddingVertical:8,
                            borderRadius:999, borderWidth:1, borderColor:t.line2 }}>

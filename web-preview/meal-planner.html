@@ -521,14 +521,14 @@ const R = [
 
 /* ─────────────────────────  지역과 마트  ───────────────────────── */
 const MART = {
-  emart:{n:'이마트',f:1.00,p:1.00,note:'품목이 가장 많고 가격 변동이 적음'},
-  homeplus:{n:'홈플러스',f:0.99,p:0.97,note:'가공식품·자체브랜드가 저렴'},
-  lotte:{n:'롯데마트',f:1.01,p:0.99,note:'정육 행사 빈도가 높음'},
-  costco:{n:'코스트코',f:0.97,p:0.97,bulk:2,bd:0.86,note:'단위가는 싸지만 두 배 용량으로만 판매'},
-  hanaro:{n:'농협 하나로마트',f:0.92,p:1.02,note:'채소·정육이 싸고 가공식품은 비싼 편'},
-  market:{n:'전통시장',f:0.88,p:1.05,note:'소량 구매 가능, 카드 안 되는 점포 있음'},
-  super:{n:'동네 슈퍼·편의마트',f:1.10,p:1.12,note:'가깝고 소량, 대신 단가가 높음'},
-  online:{n:'온라인 장보기',f:0.98,p:0.95,fee:3000,feeFree:40000,note:'4만원 미만이면 배송비 3,000원'}
+  emart:{n:'이마트',f:1.00,p:1.00,note:'대형마트'},
+  homeplus:{n:'홈플러스',f:0.99,p:0.97,note:'대형마트'},
+  lotte:{n:'롯데마트',f:1.01,p:0.99,note:'대형마트'},
+  costco:{n:'코스트코',f:0.97,p:0.97,bulk:2,bd:0.86,note:'창고형 매장 · 두 배 용량 단위로 계산'},
+  hanaro:{n:'농협 하나로마트',f:0.92,p:1.02,note:'농협 계열 마트'},
+  market:{n:'전통시장',f:0.88,p:1.05,note:'재래시장'},
+  super:{n:'동네 슈퍼·편의마트',f:1.10,p:1.12,note:'동네 소형 매장'},
+  online:{n:'온라인 장보기',f:0.98,p:0.95,fee:3000,feeFree:40000,note:'온라인 · 4만원 미만이면 배송비 3,000원으로 가정'}
 };
 const METRO = ['emart','homeplus','lotte','costco','market','super','online'];
 const GYEONGGI = ['emart','homeplus','lotte','costco','hanaro','market','super','online'];
