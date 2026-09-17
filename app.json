@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "뭐먹지",
+    "slug": "mwomeokji",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mwomeokji.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.mwomeokji.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "primaryColor": "#1E6B4A",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다."
+        }
+      ]
+    ]
+  }
+}

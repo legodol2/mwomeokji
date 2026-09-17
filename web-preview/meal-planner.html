@@ -1,0 +1,899 @@
+<title>장바구니 식단표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#FAF8F2; --card:#FFFFFF; --sunk:#F2EFE6;
+  --ink:#16201A; --ink2:#4C574F; --ink3:#7E8A81;
+  --line:#E1DED1; --line2:#CFCBBA;
+  --accent:#1E6B4A; --accent-ink:#125037; --accent-soft:#E6EFE9;
+  --warm:#B8541C; --warm-soft:#F8EBE0;
+  --danger:#A62B21; --danger-soft:#F8E6E3;
+  --shadow:0 1px 2px rgba(22,32,26,.05), 0 8px 24px -16px rgba(22,32,26,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11150F; --card:#1A201A; --sunk:#151A15;
+    --ink:#ECEFE8; --ink2:#B3BDB2; --ink3:#828D82;
+    --line:#2B332B; --line2:#3B453B;
+    --accent:#67C295; --accent-ink:#8FD6B1; --accent-soft:#1B2A22;
+    --warm:#E39468; --warm-soft:#2C211A;
+    --danger:#EE8A7F; --danger-soft:#2E1B18;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11150F; --card:#1A201A; --sunk:#151A15;
+  --ink:#ECEFE8; --ink2:#B3BDB2; --ink3:#828D82;
+  --line:#2B332B; --line2:#3B453B;
+  --accent:#67C295; --accent-ink:#8FD6B1; --accent-soft:#1B2A22;
+  --warm:#E39468; --warm-soft:#2C211A;
+  --danger:#EE8A7F; --danger-soft:#2E1B18;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:0 72px}
+h1,h2,h3{font-family:'Gowun Batang','Noto Serif KR',serif; font-weight:700; text-wrap:balance; margin:0; letter-spacing:-.01em}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3)}
+
+/* ── header ── */
+header.top{padding-block:36px 22px; border-bottom:1px solid var(--line); display:flex; gap:22px; align-items:flex-end; flex-wrap:wrap; justify-content:space-between}
+header.top h1{font-size:clamp(28px,4.4vw,40px); line-height:1.15}
+header.top p{margin:8px 0 0; color:var(--ink2); max-width:52ch; font-size:14.5px}
+.stamp{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink3); border:1px solid var(--line2); border-radius:2px; padding:6px 10px; letter-spacing:.06em; white-space:nowrap}
+
+/* ── setup ── */
+.setup{display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; margin-top:26px; overflow:hidden}
+.field{background:var(--card); padding:18px 18px 20px; display:flex; flex-direction:column; gap:12px}
+.field > .eyebrow{display:flex; align-items:baseline; gap:8px}
+.field .hint{font-size:12px; color:var(--ink3); margin:0; line-height:1.5}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{font:inherit; font-size:13px; padding:5px 11px; border:1px solid var(--line2); background:transparent; color:var(--ink2); border-radius:999px; cursor:pointer; transition:background .13s,border-color .13s,color .13s}
+.chip:hover{border-color:var(--ink3)}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:500}
+:root[data-theme="dark"] .chip[aria-pressed="true"],
+:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0E1710}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .chip[aria-pressed="true"]{color:#fff}}
+.chip:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.rows{display:flex; flex-direction:column; gap:9px}
+.row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.row label{font-size:13.5px; color:var(--ink2)}
+input[type="text"],input[type="number"],select{
+  font:inherit; font-size:14px; color:var(--ink); background:var(--sunk);
+  border:1px solid var(--line2); border-radius:3px; padding:7px 9px; width:100%;
+}
+input[type="number"]{font-family:'IBM Plex Mono',monospace; text-align:right; width:104px}
+select{width:auto; min-width:96px}
+.stepper{display:flex; align-items:center; border:1px solid var(--line2); border-radius:3px; overflow:hidden; background:var(--sunk)}
+.stepper button{font:inherit; width:30px; height:32px; border:0; background:transparent; color:var(--ink2); cursor:pointer; font-size:16px; line-height:1}
+.stepper button:hover{background:var(--accent-soft); color:var(--accent-ink)}
+.stepper input{border:0; background:transparent; width:52px; text-align:center; padding:6px 0; font-family:'IBM Plex Mono',monospace; color:var(--ink); font-size:14px}
+.go{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:18px}
+.btn{font:inherit; font-weight:500; font-size:14.5px; padding:11px 22px; border-radius:3px; cursor:pointer; border:1px solid var(--accent); background:var(--accent); color:#fff}
+:root[data-theme="dark"] .btn,:root:not([data-theme="light"]) .btn{color:#0E1710}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .btn{color:#fff}}
+.btn.ghost{background:transparent; color:var(--ink2); border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--ink3); color:var(--ink)}
+
+/* ── mart picker ── */
+.marts{display:flex; flex-direction:column; gap:2px}
+.mart{display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center; padding:7px 9px; border:1px solid transparent; border-radius:3px; cursor:pointer; background:none; font:inherit; text-align:left; color:var(--ink2); width:100%}
+.mart:hover{background:var(--sunk)}
+.mart[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft); color:var(--ink)}
+.mart b{font-weight:500; font-size:13.5px}
+.mart .mtot{font-family:'IBM Plex Mono',monospace; font-size:13px; font-variant-numeric:tabular-nums}
+.mart .bar{grid-column:1/-1; height:3px; background:var(--line); border-radius:2px; overflow:hidden}
+.mart .bar i{display:block; height:100%; background:var(--ink3)}
+.mart[aria-pressed="true"] .bar i{background:var(--accent)}
+.mart small{grid-column:1/-1; font-size:11.5px; color:var(--ink3); margin-top:-2px}
+
+/* ── summary ── */
+.summary{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; margin-top:40px; overflow:hidden}
+.stat{background:var(--card); padding:15px 16px 16px}
+.stat .k{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink3)}
+.stat .v{font-family:'IBM Plex Mono',monospace; font-size:25px; font-weight:500; margin-top:5px; letter-spacing:-.02em}
+.stat .v small{font-size:13px; font-weight:400; color:var(--ink2); margin-left:2px}
+.stat .s{font-size:12px; color:var(--ink3); margin-top:2px}
+.stat.hero .v{color:var(--warm)}
+.budgetbar{height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:9px}
+.budgetbar i{display:block; height:100%; background:var(--accent); transition:width .4s ease}
+.budgetbar.over i{background:var(--danger)}
+
+/* ── alert ── */
+.alert{margin-top:20px; border:1px solid var(--danger); background:var(--danger-soft); border-radius:4px; padding:15px 17px; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start}
+.alert h3{font-size:16px; color:var(--danger)}
+.alert p{margin:5px 0 0; font-size:13.5px; color:var(--ink2); max-width:60ch}
+.alert ul{margin:8px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink2)}
+.alert.ok{border-color:var(--accent); background:var(--accent-soft)}
+.alert.ok h3{color:var(--accent-ink)}
+
+/* ── layout ── */
+.cols{display:grid; grid-template-columns:340px 1fr; gap:28px; margin-top:34px; align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:1fr}}
+section h2{font-size:21px; margin-bottom:3px}
+section .sub{font-size:12.5px; color:var(--ink3); margin:0 0 14px}
+
+/* ── receipt ── */
+.receipt{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:20px 18px; box-shadow:var(--shadow); position:sticky; top:16px}
+@media (max-width:900px){.receipt{position:static}}
+.receipt h3{font-size:15px; letter-spacing:.02em}
+.rhead{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:8px}
+.rhead .num{font-size:11px; color:var(--ink3)}
+.aisle{margin-top:16px}
+.aisle .eyebrow{display:block; border-bottom:1px dashed var(--line2); padding-bottom:4px; margin-bottom:7px}
+.item{display:grid; grid-template-columns:1fr auto; gap:1px 10px; font-size:13.5px; padding:3px 0}
+.item .nm{color:var(--ink)}
+.item .pr{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; color:var(--ink)}
+.item .sp{grid-column:1/-1; font-size:11.5px; color:var(--ink3); font-family:'IBM Plex Mono',monospace; letter-spacing:.01em}
+.item .sp em{font-style:normal; color:var(--warm)}
+.rtot{margin-top:18px; border-top:2px solid var(--ink); padding-top:10px; display:flex; flex-direction:column; gap:5px}
+.rtot div{display:flex; justify-content:space-between; font-size:13.5px; color:var(--ink2)}
+.rtot div span:last-child{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums}
+.rtot .grand{font-size:17px; color:var(--ink); font-weight:500; border-top:1px dashed var(--line2); padding-top:8px; margin-top:3px}
+.rtot .left{color:var(--accent-ink)}
+.rtot .left.neg{color:var(--danger)}
+.owned{margin-top:12px; font-size:11.5px; color:var(--ink3); line-height:1.55; border-top:1px dashed var(--line2); padding-top:9px}
+
+/* ── days ── */
+.days{display:grid; grid-template-columns:repeat(auto-fill,minmax(292px,1fr)); gap:14px}
+.day{background:var(--card); border:1px solid var(--line); border-radius:4px; overflow:hidden}
+.day > header{display:flex; justify-content:space-between; align-items:baseline; padding:11px 15px; border-bottom:1px solid var(--line); background:var(--sunk)}
+.day > header b{font-family:'Gowun Batang',serif; font-size:16px; font-weight:700}
+.day > header .num{font-size:11.5px; color:var(--ink3)}
+.meal{border-bottom:1px dashed var(--line); }
+.meal:last-child{border-bottom:0}
+.meal > summary{list-style:none; cursor:pointer; padding:11px 15px; display:grid; grid-template-columns:38px 1fr auto; gap:10px; align-items:baseline}
+.meal > summary::-webkit-details-marker{display:none}
+.meal > summary:hover{background:var(--sunk)}
+.meal .when{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; color:var(--ink3); text-transform:uppercase}
+.meal .dish{font-size:14.5px; font-weight:500}
+.meal .dish i{font-style:normal; display:block; font-size:11.5px; font-weight:400; color:var(--ink3); margin-top:1px}
+.meal .mins{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink3)}
+.detail{padding:2px 15px 15px 63px; font-size:13px; color:var(--ink2)}
+.detail .lab{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3); margin-top:10px; display:block}
+.detail ol{margin:5px 0 0; padding-left:16px; line-height:1.6}
+.detail ol li{margin-bottom:3px}
+.detail .ilist{margin-top:4px; line-height:1.7}
+.detail .ilist span{white-space:nowrap}
+.detail .ilist span+span::before{content:" · "; color:var(--ink3)}
+.tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.06em; padding:1px 6px; border:1px solid var(--line2); border-radius:2px; color:var(--ink3); margin-left:5px; vertical-align:1px}
+.tag.hot{color:var(--warm); border-color:var(--warm)}
+.tag.fresh{color:var(--accent-ink); border-color:var(--accent)}
+
+/* ── leftovers ── */
+.after{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:34px}
+.panel{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:17px 18px}
+.panel h3{font-size:15.5px}
+.panel p.sub{margin:2px 0 12px}
+.lo{display:flex; justify-content:space-between; gap:12px; font-size:13.5px; padding:5px 0; border-bottom:1px dashed var(--line); color:var(--ink2)}
+.lo:last-child{border-bottom:0}
+.lo b{font-weight:400; color:var(--ink)}
+.lo span{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+.tip{font-size:13px; color:var(--ink2); line-height:1.7; margin:0}
+.tip b{color:var(--ink); font-weight:500}
+footer.foot{margin-top:44px; border-top:1px solid var(--line); padding-top:16px; font-size:12px; color:var(--ink3); line-height:1.7}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>냉장고 대신 예산에 맞춰 짜는 일주일</h1>
+      <p>집에 있는 조리도구와 입맛, 사는 동네를 넣으면 근처 마트에서 살 수 있는 재료로 정해둔 예산·기간 안에 먹을 식단과 장보기 목록을 짜 드립니다.</p>
+    </div>
+    <div class="stamp">가격 = 2026년 통상 시세 기준 추정</div>
+  </header>
+
+  <div class="setup">
+    <div class="field">
+      <span class="eyebrow">집에 있는 조리도구</span>
+      <p class="hint">가진 도구로만 만들 수 있는 요리를 고릅니다.</p>
+      <div class="chips" id="tools"></div>
+    </div>
+
+    <div class="field">
+      <span class="eyebrow">입맛</span>
+      <p class="hint">즐겨 먹는 종류와 매운맛 한계를 정하세요.</p>
+      <div class="chips" id="cuisines"></div>
+      <div class="rows">
+        <div class="row"><label for="spice">매운맛 한계</label>
+          <select id="spice">
+            <option value="0">안 매운 것만</option>
+            <option value="1">약간 매운 것까지</option>
+            <option value="2" selected>보통 매운 것까지</option>
+            <option value="3">아주 매운 것도</option>
+          </select>
+        </div>
+        <div class="row"><label for="diet">못 먹는 것</label>
+          <select id="diet">
+            <option value="none" selected>없음</option>
+            <option value="nopork">돼지고기 빼고</option>
+            <option value="nofish">해산물 빼고</option>
+            <option value="veg">고기·해산물 다 빼고</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="eyebrow">사는 지역</span>
+      <p class="hint">시·군·구까지 적으면 그 동네에 있는 장 볼 곳을 찾습니다.</p>
+      <input type="text" id="region" value="서울 마포구" placeholder="예: 부산 해운대구, 전주시, 제주시" autocomplete="off">
+      <div class="marts" id="marts"></div>
+    </div>
+
+    <div class="field">
+      <span class="eyebrow">예산과 기간</span>
+      <p class="hint">이 금액 안에서 이 기간을 버티는 장보기를 짭니다.</p>
+      <div class="rows">
+        <div class="row"><label for="budget">예산 (원)</label><input type="number" id="budget" value="90000" min="10000" max="2000000" step="5000"></div>
+        <div class="row"><label for="days">며칠치</label>
+          <div class="stepper"><button type="button" data-step="days" data-d="-1" aria-label="기간 줄이기">−</button><input type="number" id="days" value="5" min="1" max="14"><button type="button" data-step="days" data-d="1" aria-label="기간 늘리기">+</button></div>
+        </div>
+        <div class="row"><label for="people">몇 명</label>
+          <div class="stepper"><button type="button" data-step="people" data-d="-1" aria-label="인원 줄이기">−</button><input type="number" id="people" value="1" min="1" max="6"><button type="button" data-step="people" data-d="1" aria-label="인원 늘리기">+</button></div>
+        </div>
+        <div class="row"><label for="mpd">하루 몇 끼</label>
+          <select id="mpd"><option value="1">저녁 한 끼</option><option value="2" selected>두 끼</option><option value="3">세 끼</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="eyebrow">이미 집에 있는 양념</span>
+      <p class="hint">체크한 건 장보기 목록과 예산 계산에서 뺍니다.</p>
+      <div class="chips" id="pantry"></div>
+    </div>
+  </div>
+
+  <div class="go">
+    <button class="btn" id="plan">식단 짜기</button>
+    <button class="btn ghost" id="reroll">다른 조합으로</button>
+    <span class="eyebrow" id="stateline"></span>
+  </div>
+
+  <div id="verdict"></div>
+  <div class="summary" id="summary"></div>
+
+  <div class="cols">
+    <section>
+      <h2>장보기 목록</h2>
+      <p class="sub">마트 동선 순서대로 묶었습니다. 규격은 낱개가 아니라 파는 단위 기준입니다.</p>
+      <div class="receipt" id="receipt"></div>
+    </section>
+
+    <section>
+      <h2>날짜별 식단</h2>
+      <p class="sub">상하기 쉬운 재료를 쓰는 요리를 앞쪽에 뒀습니다. 끼니를 누르면 재료와 만드는 법이 펼쳐집니다.</p>
+      <div class="days" id="days-out"></div>
+
+      <div class="after">
+        <div class="panel">
+          <h3>남는 재료</h3>
+          <p class="sub">규격 때문에 남는 양입니다. 다음 장보기 전에 여기부터 쓰세요.</p>
+          <div id="leftovers"></div>
+        </div>
+        <div class="panel">
+          <h3>사고 나서 할 일</h3>
+          <p class="sub">기간 안에 안 상하게 하는 최소한의 손질입니다.</p>
+          <div id="tips"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="foot">
+    가격은 국내 대형마트·전통시장의 통상 판매 시세를 바탕으로 한 <b>추정치</b>입니다. 실제 매대 가격은 행사·산지·시기에 따라 달라지므로 총액은 여유 있게 잡으세요.<br>
+    조리도구·입맛·지역·예산·기간을 바꾸면 식단과 장보기 목록이 즉시 다시 계산됩니다.
+  </footer>
+</div>
+
+<script>
+/* ─────────────────────────  재료 시세표  ─────────────────────────
+   pq = 파는 단위 수량, p = 그 단위 가격(원), s = 냉장 보관 가능 일수      */
+const ING = {
+  rice:{n:'쌀',u:'g',pl:'4kg',pq:4000,p:15900,a:'쌀·면·간편',s:365,d:'grain'},
+  somyeon:{n:'소면',u:'g',pl:'900g',pq:900,p:3480,a:'쌀·면·간편',s:365,d:'grain'},
+  spaghetti:{n:'스파게티면',u:'g',pl:'500g',pq:500,p:3290,a:'쌀·면·간편',s:365,d:'grain'},
+  udon:{n:'생우동면',u:'g',pl:'2인분 400g',pq:400,p:3180,a:'쌀·면·간편',s:30,d:'grain'},
+  tortilla:{n:'또띠아',u:'g',pl:'8장 320g',pq:320,p:3980,a:'쌀·면·간편',s:30,d:'grain'},
+  bread:{n:'식빵',u:'g',pl:'1봉 420g',pq:420,p:2880,a:'쌀·면·간편',s:5,d:'grain'},
+  tteok:{n:'떡볶이·떡국떡',u:'g',pl:'500g',pq:500,p:3980,a:'쌀·면·간편',s:14,d:'grain'},
+  miyeok:{n:'건미역',u:'g',pl:'50g',pq:50,p:3480,a:'쌀·면·간편',s:365,d:'veg'},
+
+  porkbelly:{n:'삼겹살',u:'g',pl:'500g',pq:500,p:12900,a:'정육',s:3,d:'meat-pork'},
+  pork:{n:'돼지 앞다리살',u:'g',pl:'500g',pq:500,p:6900,a:'정육',s:3,d:'meat-pork'},
+  porkground:{n:'돼지 다짐육',u:'g',pl:'400g',pq:400,p:6480,a:'정육',s:2,d:'meat-pork'},
+  beef:{n:'소불고기용',u:'g',pl:'400g',pq:400,p:13900,a:'정육',s:3,d:'meat-beef'},
+  chickenleg:{n:'닭다리살',u:'g',pl:'500g',pq:500,p:7900,a:'정육',s:3,d:'meat-chicken'},
+  chickenbreast:{n:'닭가슴살',u:'g',pl:'500g',pq:500,p:6900,a:'정육',s:3,d:'meat-chicken'},
+  bacon:{n:'베이컨',u:'g',pl:'200g',pq:200,p:4480,a:'유제품·냉장',s:14,d:'meat-pork'},
+  ham:{n:'햄',u:'g',pl:'200g',pq:200,p:3980,a:'가공·양념',s:180,d:'meat-pork'},
+
+  squid:{n:'오징어',u:'g',pl:'1마리 250g',pq:250,p:4980,a:'수산',s:2,d:'fish'},
+  mackerel:{n:'손질 고등어',u:'g',pl:'2손 400g',pq:400,p:5980,a:'수산',s:2,d:'fish'},
+  anchovy:{n:'국물용 멸치',u:'g',pl:'200g',pq:200,p:5900,a:'수산',s:180,d:'fish'},
+  tunacan:{n:'참치캔',u:'g',pl:'100g×3',pq:300,p:5480,a:'가공·양념',s:365,d:'fish'},
+  shrimp:{n:'냉동 새우살',u:'g',pl:'300g',pq:300,p:8900,a:'수산',s:90,d:'fish'},
+  gim:{n:'구운 김',u:'장',pl:'10봉 30장',pq:30,p:3500,a:'가공·양념',s:180,d:'veg'},
+
+  onion:{n:'양파',u:'g',pl:'1.5kg 망',pq:1500,p:3980,a:'농산',s:30,d:'veg'},
+  potato:{n:'감자',u:'g',pl:'1kg',pq:1000,p:3480,a:'농산',s:30,d:'veg'},
+  carrot:{n:'당근',u:'g',pl:'500g',pq:500,p:2280,a:'농산',s:21,d:'veg'},
+  zucchini:{n:'애호박',u:'g',pl:'1개 250g',pq:250,p:1980,a:'농산',s:7,d:'veg'},
+  greenonion:{n:'대파',u:'g',pl:'1단 700g',pq:700,p:3480,a:'농산',s:10,d:'veg'},
+  cabbage:{n:'양배추',u:'g',pl:'1/2통 600g',pq:600,p:2980,a:'농산',s:14,d:'veg'},
+  kimchi:{n:'배추김치',u:'g',pl:'1kg',pq:1000,p:8900,a:'유제품·냉장',s:60,d:'veg'},
+  beansprout:{n:'콩나물',u:'g',pl:'300g',pq:300,p:1780,a:'농산',s:4,d:'veg'},
+  spinach:{n:'시금치',u:'g',pl:'200g',pq:200,p:2480,a:'농산',s:4,d:'veg'},
+  mushroom:{n:'새송이버섯',u:'g',pl:'300g',pq:300,p:2480,a:'농산',s:10,d:'veg'},
+  tomato:{n:'토마토',u:'g',pl:'700g',pq:700,p:5480,a:'농산',s:7,d:'veg'},
+  paprika:{n:'파프리카',u:'g',pl:'2개 400g',pq:400,p:3180,a:'농산',s:10,d:'veg'},
+  cucumber:{n:'오이',u:'g',pl:'2개 400g',pq:400,p:2480,a:'농산',s:7,d:'veg'},
+  radish:{n:'무',u:'g',pl:'1개 800g',pq:800,p:2680,a:'농산',s:21,d:'veg'},
+  lettuce:{n:'상추',u:'g',pl:'150g',pq:150,p:2180,a:'농산',s:4,d:'veg'},
+  chili:{n:'청양고추',u:'g',pl:'100g',pq:100,p:1980,a:'농산',s:10,d:'veg'},
+  broccoli:{n:'브로콜리',u:'g',pl:'1개 300g',pq:300,p:2480,a:'농산',s:7,d:'veg'},
+  corn:{n:'옥수수콘 캔',u:'g',pl:'340g',pq:340,p:2480,a:'가공·양념',s:365,d:'veg'},
+
+  egg:{n:'계란',u:'개',pl:'10구',pq:10,p:4280,a:'유제품·냉장',s:21,d:'egg'},
+  tofu:{n:'두부',u:'g',pl:'300g',pq:300,p:2180,a:'유제품·냉장',s:10,d:'veg'},
+  milk:{n:'우유',u:'ml',pl:'900ml',pq:900,p:3180,a:'유제품·냉장',s:10,d:'dairy'},
+  cheese:{n:'슬라이스 치즈',u:'장',pl:'10장',pq:10,p:5480,a:'유제품·냉장',s:30,d:'dairy'},
+  mozz:{n:'모짜렐라 치즈',u:'g',pl:'500g',pq:500,p:8900,a:'유제품·냉장',s:21,d:'dairy'},
+  butter:{n:'버터',u:'g',pl:'200g',pq:200,p:5980,a:'유제품·냉장',s:90,d:'dairy'},
+  cream:{n:'생크림',u:'ml',pl:'200ml',pq:200,p:3480,a:'유제품·냉장',s:14,d:'dairy'},
+
+  soysauce:{n:'간장',u:'ml',pl:'500ml',pq:500,p:4280,a:'가공·양념',s:365,d:'veg'},
+  gochujang:{n:'고추장',u:'g',pl:'500g',pq:500,p:5980,a:'가공·양념',s:365,d:'veg'},
+  gochugaru:{n:'고춧가루',u:'g',pl:'200g',pq:200,p:6900,a:'가공·양념',s:180,d:'veg'},
+  doenjang:{n:'된장',u:'g',pl:'500g',pq:500,p:5480,a:'가공·양념',s:365,d:'veg'},
+  garlic:{n:'다진마늘',u:'g',pl:'200g',pq:200,p:2980,a:'농산',s:30,d:'veg'},
+  sesameoil:{n:'참기름',u:'ml',pl:'160ml',pq:160,p:6480,a:'가공·양념',s:365,d:'veg'},
+  oil:{n:'식용유',u:'ml',pl:'900ml',pq:900,p:4980,a:'가공·양념',s:365,d:'veg'},
+  sugar:{n:'설탕',u:'g',pl:'1kg',pq:1000,p:2480,a:'가공·양념',s:365,d:'veg'},
+  salt:{n:'소금',u:'g',pl:'1kg',pq:1000,p:2180,a:'가공·양념',s:365,d:'veg'},
+  pepper:{n:'후춧가루',u:'g',pl:'50g',pq:50,p:3480,a:'가공·양념',s:365,d:'veg'},
+  vinegar:{n:'식초',u:'ml',pl:'500ml',pq:500,p:2280,a:'가공·양념',s:365,d:'veg'},
+  mirin:{n:'맛술',u:'ml',pl:'500ml',pq:500,p:3280,a:'가공·양념',s:365,d:'veg'},
+  ketchup:{n:'케첩',u:'g',pl:'300g',pq:300,p:2980,a:'가공·양념',s:365,d:'veg'},
+  mayo:{n:'마요네즈',u:'g',pl:'300g',pq:300,p:3480,a:'가공·양념',s:365,d:'veg'},
+  oyster:{n:'굴소스',u:'g',pl:'250g',pq:250,p:4180,a:'가공·양념',s:365,d:'fish'},
+  curry:{n:'카레가루',u:'g',pl:'100g',pq:100,p:2180,a:'가공·양념',s:365,d:'veg'},
+  tomatosauce:{n:'토마토 파스타소스',u:'g',pl:'600g',pq:600,p:4480,a:'가공·양념',s:365,d:'veg'},
+  starch:{n:'전분가루',u:'g',pl:'400g',pq:400,p:2480,a:'가공·양념',s:365,d:'veg'},
+  flour:{n:'밀가루',u:'g',pl:'1kg',pq:1000,p:2180,a:'가공·양념',s:365,d:'veg'}
+};
+const AISLES = ['농산','정육','수산','유제품·냉장','가공·양념','쌀·면·간편'];
+const FRESH_AISLES = new Set(['농산','정육','수산']);
+
+const TOOLS = [
+  {id:'pot',n:'냄비',def:true},{id:'pan',n:'프라이팬',def:true},{id:'knife',n:'칼·도마',def:true},
+  {id:'rice',n:'밥솥',def:true},{id:'micro',n:'전자레인지',def:true},{id:'air',n:'에어프라이어',def:true},
+  {id:'oven',n:'오븐',def:false},{id:'blender',n:'믹서',def:false}
+];
+const CUISINES = ['한식','양식','일식','중식'];
+const PANTRY = [
+  {id:'p0',n:'쌀',ids:['rice'],def:true},
+  {id:'p1',n:'간장·소금·설탕·후추',ids:['soysauce','salt','sugar','pepper'],def:true},
+  {id:'p2',n:'식용유·참기름',ids:['oil','sesameoil'],def:true},
+  {id:'p3',n:'고추장·된장·고춧가루',ids:['gochujang','doenjang','gochugaru'],def:false},
+  {id:'p4',n:'다진마늘',ids:['garlic'],def:false},
+  {id:'p5',n:'케첩·마요·굴소스',ids:['ketchup','mayo','oyster'],def:false},
+  {id:'p6',n:'밀가루·전분·식초·맛술',ids:['flour','starch','vinegar','mirin'],def:false}
+];
+
+/* ─────────────────────────  레시피 (1인 1끼 기준)  ───────────────────────── */
+const R = [
+ {id:'kbb',n:'김치볶음밥',c:'한식',t:15,sp:1,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:100,kimchi:100,egg:1,ham:40,greenonion:20,oil:10,sesameoil:5},
+  steps:['김치와 햄을 잘게 썰어 기름에 볶아 신맛을 날린다.','밥을 넣고 눌러가며 볶다가 대파를 넣는다.','참기름 두르고 계란프라이를 얹는다.']},
+ {id:'dwj',n:'된장찌개',c:'한식',t:25,sp:1,q:0,tools:['pot','knife',['rice','pot']],
+  ing:{rice:100,tofu:100,zucchini:60,onion:50,potato:60,doenjang:25,garlic:5,greenonion:15,anchovy:8},
+  steps:['멸치를 넣고 물 400ml를 10분 끓여 육수를 낸다.','된장을 풀고 감자·양파를 먼저, 애호박·두부를 나중에 넣는다.','마늘과 대파를 넣고 2분 더 끓인다.']},
+ {id:'kcj',n:'김치찌개',c:'한식',t:30,sp:2,q:0,tools:['pot','knife',['rice','pot']],
+  ing:{rice:100,kimchi:150,pork:80,tofu:80,onion:40,greenonion:15,gochugaru:5,garlic:5},
+  steps:['앞다리살을 기름 없이 볶아 겉면을 익힌다.','김치를 넣고 같이 볶다가 물 350ml를 붓는다.','15분 끓인 뒤 두부·대파를 넣고 고춧가루로 색을 낸다.']},
+ {id:'jyk',n:'제육볶음',c:'한식',t:25,sp:2,q:0,tools:['pan','knife',['rice','pot']],
+  ing:{rice:100,pork:150,onion:60,greenonion:20,gochujang:25,gochugaru:5,soysauce:10,sugar:8,garlic:5,oil:10},
+  steps:['고추장·고춧가루·간장·설탕·마늘을 섞어 양념장을 만든다.','고기에 양념을 버무려 10분 재운다.','센 불에 양파와 함께 볶고 마지막에 대파를 넣는다.']},
+ {id:'gml',n:'계란말이 백반',c:'한식',t:15,sp:0,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:100,egg:3,carrot:20,greenonion:10,salt:2,oil:8,gim:2},
+  steps:['계란에 잘게 썬 당근·대파·소금을 섞는다.','약불 팬에 얇게 부어 반쯤 익으면 말기를 세 번 반복한다.','한 김 식혀 썰고 밥·김과 함께 낸다.']},
+ {id:'kng',n:'콩나물국밥',c:'한식',t:20,sp:1,q:1,tools:['pot',['rice','pot','micro']],
+  ing:{rice:100,beansprout:120,anchovy:8,greenonion:15,garlic:5,gochugaru:3,egg:1},
+  steps:['멸치 육수 400ml에 콩나물을 넣고 뚜껑 덮은 채 5분 끓인다.','밥을 넣고 한소끔 끓여 마늘·고춧가루로 간을 맞춘다.','불을 끄고 계란을 풀어 얹은 뒤 대파를 뿌린다.']},
+ {id:'blg',n:'소불고기',c:'한식',t:25,sp:0,q:0,tools:['pan','knife',['rice','pot']],
+  ing:{rice:100,beef:150,onion:60,carrot:30,greenonion:15,soysauce:25,sugar:10,sesameoil:5,garlic:5},
+  steps:['간장·설탕·마늘·참기름에 고기를 15분 재운다.','팬을 달궈 고기를 먼저 펴 굽는다.','양파·당근을 넣고 국물이 자작해질 때까지 볶는다.']},
+ {id:'gdo',n:'고등어구이',c:'한식',t:20,sp:0,q:1,tools:[['air','pan'],['rice','pot','micro']],
+  ing:{rice:100,mackerel:200,salt:3,kimchi:50},
+  steps:['고등어 물기를 닦고 소금을 뿌려 10분 둔다.','에어프라이어 190도 12분, 뒤집지 않고 굽는다.','밥·김치와 함께 낸다.']},
+ {id:'bbb',n:'비빔밥',c:'한식',t:30,sp:1,q:0,tools:['pan','knife',['rice','pot']],
+  ing:{rice:100,beansprout:60,spinach:60,carrot:40,zucchini:50,egg:1,gochujang:25,sesameoil:8},
+  steps:['콩나물·시금치는 데쳐 참기름·소금에 무친다.','당근과 애호박은 채 썰어 각각 볶는다.','밥 위에 돌려 담고 계란프라이와 고추장을 올린다.']},
+ {id:'jch',n:'잔치국수',c:'한식',t:20,sp:0,q:1,tools:['pot',['pot']],
+  ing:{somyeon:100,anchovy:10,zucchini:40,egg:1,greenonion:15,soysauce:15,gim:2},
+  steps:['멸치 육수 500ml를 내고 간장으로 간한다.','소면은 따로 삶아 찬물에 헹궈 사린다.','애호박볶음·지단·김을 고명으로 올린다.']},
+ {id:'tgk',n:'떡국',c:'한식',t:20,sp:0,q:1,tools:['pot'],
+  ing:{tteok:180,egg:1,gim:2,greenonion:15,anchovy:8,soysauce:10},
+  steps:['떡은 찬물에 10분 담가 둔다.','멸치 육수에 떡을 넣고 떠오를 때까지 끓인다.','계란을 풀어 넣고 김·대파를 올린다.']},
+ {id:'dbj',n:'두부조림',c:'한식',t:20,sp:1,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:100,tofu:200,soysauce:20,gochugaru:5,greenonion:15,garlic:5,sugar:5,oil:10},
+  steps:['두부를 도톰하게 썰어 앞뒤로 노릇하게 지진다.','간장·고춧가루·마늘·설탕에 물 60ml를 섞어 붓는다.','국물을 끼얹어가며 조리고 대파를 뿌린다.']},
+ {id:'ojb',n:'오징어볶음',c:'한식',t:25,sp:3,q:0,tools:['pan','knife',['rice','pot']],
+  ing:{rice:100,squid:200,onion:60,cabbage:80,greenonion:20,gochujang:20,gochugaru:6,sugar:8,garlic:5},
+  steps:['오징어는 칼집을 넣어 한입 크기로 썬다.','센 불에 채소를 먼저 볶다가 오징어를 넣는다.','양념을 넣고 3분 안에 빠르게 볶아낸다.']},
+ {id:'dkj',n:'닭다리 감자조림',c:'한식',t:35,sp:2,q:0,tools:['pot','knife',['rice','pot']],
+  ing:{rice:100,chickenleg:200,potato:120,carrot:50,onion:60,gochujang:20,gochugaru:8,soysauce:20,garlic:5},
+  steps:['닭다리살을 데치듯 한 번 볶아 기름을 뺀다.','양념과 물 300ml를 붓고 감자·당근을 넣는다.','뚜껑 덮고 20분, 국물이 반으로 줄 때까지 조린다.']},
+ {id:'myg',n:'소고기 미역국',c:'한식',t:30,sp:0,q:0,tools:['pot',['rice','pot']],
+  ing:{rice:100,miyeok:8,beef:60,soysauce:10,sesameoil:5,garlic:3},
+  steps:['미역을 20분 불려 헹구고 한입 크기로 자른다.','참기름에 고기와 미역을 5분 볶는다.','물 500ml를 붓고 15분 끓여 간장·마늘로 간한다.']},
+ {id:'sgs',n:'삼겹살 쌈밥',c:'한식',t:20,sp:0,q:1,tools:[['pan','air'],['rice','pot']],
+  ing:{rice:100,porkbelly:180,lettuce:60,garlic:5,kimchi:60,doenjang:10,gochujang:5},
+  steps:['팬을 충분히 달군 뒤 삼겹살을 올려 건드리지 않고 굽는다.','기름이 나오면 김치를 옆에서 같이 굽는다.','된장·고추장을 섞어 쌈장을 만들어 상추에 싼다.']},
+ {id:'smg',n:'소고기 무국',c:'한식',t:30,sp:0,q:0,tools:['pot','knife',['rice','pot']],
+  ing:{rice:100,beef:80,radish:150,greenonion:15,soysauce:15,garlic:5,sesameoil:5},
+  steps:['무를 나박하게 썰어 참기름에 고기와 볶는다.','무가 투명해지면 물 500ml를 붓는다.','15분 끓여 간장·마늘로 간하고 대파를 넣는다.']},
+ {id:'tbk',n:'떡볶이',c:'한식',t:20,sp:2,q:1,tools:['pot'],
+  ing:{tteok:200,gochujang:25,gochugaru:8,sugar:15,greenonion:20,cabbage:50,ham:40,egg:1},
+  steps:['물 300ml에 고추장·고춧가루·설탕을 풀어 끓인다.','떡과 양배추·햄을 넣고 중불에서 졸인다.','삶은 계란과 대파를 올린다.']},
+ {id:'kcj2',n:'김치전',c:'한식',t:20,sp:1,q:1,tools:['pan'],
+  ing:{flour:80,kimchi:120,egg:1,greenonion:20,oil:20,chili:5},
+  steps:['김치를 잘게 썰어 밀가루·계란·물 80ml와 섞는다.','기름을 넉넉히 두른 팬에 얇게 편다.','한 면이 바삭해지면 뒤집어 눌러가며 굽는다.']},
+ {id:'bbg',n:'비빔국수',c:'한식',t:15,sp:2,q:1,tools:['pot','knife'],
+  ing:{somyeon:100,cucumber:60,kimchi:60,gochujang:20,vinegar:10,sugar:8,sesameoil:5,egg:1,lettuce:30},
+  steps:['고추장·식초·설탕·참기름을 섞어 양념장을 만든다.','소면을 삶아 찬물에 여러 번 헹궈 물기를 뺀다.','채 썬 오이·상추·김치와 함께 비비고 삶은 계란을 올린다.']},
+
+ {id:'tps',n:'토마토 파스타',c:'양식',t:25,sp:0,q:0,tools:['pot','pan'],
+  ing:{spaghetti:100,tomatosauce:150,onion:50,bacon:40,garlic:5,oil:10,cheese:1},
+  steps:['면을 소금 넣은 물에 8분 삶고 면수 100ml를 남긴다.','베이컨과 양파·마늘을 볶다가 소스를 붓는다.','면과 면수를 넣어 1분 볶고 치즈를 올린다.']},
+ {id:'cps',n:'크림 파스타',c:'양식',t:25,sp:0,q:0,tools:['pot','pan'],
+  ing:{spaghetti:100,cream:100,milk:50,bacon:40,mushroom:60,garlic:5,pepper:1},
+  steps:['면을 8분 삶는다.','베이컨·버섯·마늘을 볶고 생크림과 우유를 붓는다.','면을 넣고 소스가 감길 때까지 졸인 뒤 후추를 넉넉히.']},
+ {id:'aoo',n:'알리오 올리오',c:'양식',t:20,sp:1,q:1,tools:['pot','pan'],
+  ing:{spaghetti:100,garlic:15,chili:10,oil:20,salt:3},
+  steps:['마늘을 약불 기름에 천천히 볶아 향을 낸다.','청양고추를 넣고 면수 100ml를 부어 유화시킨다.','삶은 면을 넣고 세게 흔들어 섞는다.']},
+ {id:'omr',n:'오므라이스',c:'양식',t:25,sp:0,q:0,tools:['pan',['rice','pot','micro']],
+  ing:{rice:100,egg:2,onion:50,carrot:30,ham:50,ketchup:30,corn:30},
+  steps:['양파·당근·햄을 잘게 볶다가 밥과 케첩을 넣어 볶는다.','계란을 풀어 약불에서 얇게 부친다.','볶음밥을 감싸 접시에 뒤집어 담는다.']},
+ {id:'cst',n:'치킨 스테이크와 구운 채소',c:'양식',t:30,sp:0,q:0,tools:[['air','pan','oven'],'knife'],
+  ing:{chickenleg:200,paprika:60,broccoli:60,potato:100,salt:3,pepper:1,oil:10},
+  steps:['닭다리살에 소금·후추를 뿌려 15분 둔다.','채소는 한입 크기로 썰어 기름에 버무린다.','에어프라이어 200도에서 닭 15분, 채소 10분 굽는다.']},
+ {id:'psp',n:'감자 수프',c:'양식',t:30,sp:0,q:0,tools:['pot','blender'],
+  ing:{potato:200,onion:50,milk:150,butter:15,salt:3,bread:60},
+  steps:['버터에 양파를 볶다가 얇게 썬 감자를 넣는다.','물 200ml를 붓고 감자가 으깨질 때까지 끓인다.','우유를 넣고 갈아서 소금 간, 식빵을 구워 곁들인다.']},
+ {id:'gsw',n:'그릴 샌드위치',c:'양식',t:12,sp:0,q:1,tools:['pan'],
+  ing:{bread:90,egg:1,cheese:1,ham:40,cabbage:50,mayo:15,ketchup:10},
+  steps:['양배추를 채 썰어 마요네즈에 버무린다.','계란과 햄을 팬에 굽고 빵도 같이 굽는다.','치즈-계란-양배추 순으로 쌓아 눌러 반으로 자른다.']},
+ {id:'brt',n:'부리또 볼',c:'양식',t:25,sp:1,q:0,tools:['pan','knife'],
+  ing:{tortilla:80,porkground:120,cabbage:60,tomato:60,mozz:30,ketchup:20,corn:30},
+  steps:['다짐육을 소금·후추로 볶는다.','또띠아를 마른 팬에 데운다.','채 썬 양배추·토마토·옥수수·치즈와 함께 싼다.']},
+ {id:'sps',n:'마늘버터 새우 파스타',c:'양식',t:25,sp:1,q:0,tools:['pot','pan'],
+  ing:{spaghetti:100,shrimp:100,garlic:15,butter:20,chili:5,salt:3},
+  steps:['새우는 해동해 물기를 닦는다.','버터에 마늘·고추를 볶고 새우를 넣어 겉만 익힌다.','면과 면수 100ml를 넣고 재빨리 섞는다.']},
+ {id:'grt',n:'감자 그라탕',c:'양식',t:40,sp:0,q:0,tools:[['oven','air'],'pot'],
+  ing:{potato:150,milk:120,mozz:60,bacon:40,onion:40,butter:15},
+  steps:['감자를 얇게 썰어 우유에 넣고 5분 삶는다.','내열용기에 감자·베이컨·양파를 켜켜이 담는다.','치즈를 덮어 200도에서 15분, 윗면이 노릇해질 때까지.']},
+
+ {id:'gyd',n:'규동',c:'일식',t:20,sp:0,q:1,tools:['pan',['rice','pot']],
+  ing:{rice:130,beef:130,onion:80,soysauce:25,sugar:10,mirin:15,egg:1},
+  steps:['간장·설탕·맛술·물 100ml를 끓인다.','양파를 넣어 숨을 죽이고 고기를 펴 넣는다.','계란을 반만 풀어 둘러 얹고 뚜껑을 덮어 1분.']},
+ {id:'udn',n:'가케 우동',c:'일식',t:15,sp:0,q:1,tools:['pot'],
+  ing:{udon:200,anchovy:10,soysauce:20,greenonion:15,egg:1,gim:2},
+  steps:['멸치 육수 500ml에 간장으로 간을 한다.','우동면을 끓는 물에 1분 데쳐 그릇에 담는다.','국물을 붓고 반숙 계란·김·대파를 올린다.']},
+ {id:'crr',n:'카레라이스',c:'일식',t:35,sp:1,q:0,tools:['pot','knife',['rice','pot']],
+  ing:{rice:130,curry:40,potato:120,carrot:60,onion:80,pork:100},
+  steps:['고기와 양파를 볶다가 감자·당근을 넣는다.','물 400ml를 붓고 채소가 익을 때까지 끓인다.','불을 줄이고 카레가루를 풀어 5분 더 저으며 끓인다.']},
+ {id:'tmd',n:'참치마요 덮밥',c:'일식',t:10,sp:0,q:1,tools:[['rice','micro','pot']],
+  ing:{rice:130,tunacan:100,mayo:25,soysauce:10,gim:3,egg:1},
+  steps:['참치캔 기름을 따라내고 마요네즈·간장에 버무린다.','따뜻한 밥 위에 얹는다.','계란프라이와 잘게 자른 김을 올린다.']},
+ {id:'mpd',n:'마파두부 덮밥',c:'중식',t:20,sp:2,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:100,tofu:200,porkground:80,greenonion:20,gochujang:15,oyster:10,starch:8,garlic:5},
+  steps:['다짐육을 볶다가 고추장·굴소스·마늘을 넣는다.','물 150ml를 붓고 깍둑 썬 두부를 조심히 넣는다.','전분물로 농도를 잡고 대파를 뿌려 밥에 얹는다.']},
+ {id:'ykd',n:'야끼우동',c:'중식',t:20,sp:1,q:1,tools:['pan','knife'],
+  ing:{udon:200,cabbage:80,carrot:30,onion:50,oyster:20,soysauce:10,pork:70},
+  steps:['우동면을 30초 데쳐 물기를 뺀다.','센 불에 고기와 채소를 볶는다.','면과 굴소스·간장을 넣고 눌러가며 볶는다.']},
+ {id:'gbr',n:'계란 볶음밥',c:'중식',t:15,sp:0,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:130,egg:2,greenonion:20,oyster:10,oil:12,ham:40},
+  steps:['기름에 대파를 볶아 파기름을 낸다.','계란을 스크램블하고 밥을 넣어 흩뜨리며 볶는다.','굴소스를 팬 가장자리에 둘러 향을 낸다.']},
+ {id:'sbr',n:'새우 볶음밥',c:'중식',t:18,sp:0,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:130,shrimp:80,egg:1,greenonion:20,oyster:10,corn:30,oil:12},
+  steps:['새우를 해동해 물기를 없애고 센 불에 굽는다.','계란·밥·옥수수를 넣고 고슬하게 볶는다.','굴소스로 간하고 대파를 마지막에 넣는다.']},
+ {id:'tge',n:'토마토 계란 볶음',c:'중식',t:15,sp:0,q:1,tools:['pan',['rice','pot','micro']],
+  ing:{rice:100,tomato:200,egg:2,greenonion:15,sugar:5,salt:3,oil:10},
+  steps:['계란을 반숙으로 볶아 따로 덜어 둔다.','토마토를 넣고 물이 나올 때까지 볶는다.','설탕·소금으로 간하고 계란을 다시 합쳐 섞는다.']},
+ {id:'dkc',n:'두부김치',c:'중식',t:20,sp:2,q:1,tools:['pan','pot'],
+  ing:{tofu:200,kimchi:150,pork:80,sesameoil:8,sugar:5,greenonion:15},
+  steps:['두부를 8분 데치거나 팬에 지진다.','고기를 볶다가 김치를 넣고 설탕을 조금 넣어 볶는다.','참기름을 두르고 두부를 둘러 담는다.']},
+ {id:'tds',n:'닭가슴살 데리야끼 덮밥',c:'일식',t:20,sp:0,q:1,tools:['pan',['rice','pot']],
+  ing:{rice:130,chickenbreast:180,soysauce:20,sugar:10,mirin:15,onion:50,egg:1},
+  steps:['닭가슴살을 도톰하게 저며 팬에 굽는다.','간장·설탕·맛술을 넣고 양파와 함께 조린다.','밥에 얹고 반숙 계란을 올린다.']}
+];
+
+/* ─────────────────────────  지역과 마트  ───────────────────────── */
+const MART = {
+  emart:{n:'이마트',f:1.00,p:1.00,note:'품목이 가장 많고 가격 변동이 적음'},
+  homeplus:{n:'홈플러스',f:0.99,p:0.97,note:'가공식품·자체브랜드가 저렴'},
+  lotte:{n:'롯데마트',f:1.01,p:0.99,note:'정육 행사 빈도가 높음'},
+  costco:{n:'코스트코',f:0.97,p:0.97,bulk:2,bd:0.86,note:'단위가는 싸지만 두 배 용량으로만 판매'},
+  hanaro:{n:'농협 하나로마트',f:0.92,p:1.02,note:'채소·정육이 싸고 가공식품은 비싼 편'},
+  market:{n:'전통시장',f:0.88,p:1.05,note:'소량 구매 가능, 카드 안 되는 점포 있음'},
+  super:{n:'동네 슈퍼·편의마트',f:1.10,p:1.12,note:'가깝고 소량, 대신 단가가 높음'},
+  online:{n:'온라인 장보기',f:0.98,p:0.95,fee:3000,feeFree:40000,note:'4만원 미만이면 배송비 3,000원'}
+};
+const METRO = ['emart','homeplus','lotte','costco','market','super','online'];
+const GYEONGGI = ['emart','homeplus','lotte','costco','hanaro','market','super','online'];
+const PROVINCE = ['emart','hanaro','homeplus','market','super','online'];
+const REGIONS = [
+  {k:['서울'],n:'서울',m:METRO},{k:['부산'],n:'부산',m:METRO},{k:['대구'],n:'대구',m:METRO},
+  {k:['인천'],n:'인천',m:METRO},{k:['광주'],n:'광주',m:METRO},{k:['대전'],n:'대전',m:METRO},
+  {k:['울산'],n:'울산',m:METRO},{k:['세종'],n:'세종',m:GYEONGGI},
+  {k:['경기','수원','성남','고양','용인','부천','안산','안양','화성','평택','의정부','파주','김포','광명','시흥','남양주'],n:'경기',m:GYEONGGI},
+  {k:['강원','춘천','원주','강릉','속초'],n:'강원',m:PROVINCE},
+  {k:['충북','청주','충주','제천'],n:'충북',m:PROVINCE},
+  {k:['충남','천안','아산','서산','당진'],n:'충남',m:PROVINCE},
+  {k:['전북','전주','익산','군산'],n:'전북',m:PROVINCE},
+  {k:['전남','여수','순천','목포','광양'],n:'전남',m:PROVINCE},
+  {k:['경북','포항','구미','경주','안동'],n:'경북',m:PROVINCE},
+  {k:['경남','창원','김해','진주','양산','거제'],n:'경남',m:PROVINCE},
+  {k:['제주','서귀포'],n:'제주',m:['emart','hanaro','market','super','online'],island:true}
+];
+</script>
+
+<script>
+const $ = s => document.querySelector(s);
+const won = n => Math.round(n).toLocaleString('ko-KR');
+const TOOLNAME = Object.fromEntries(TOOLS.map(t=>[t.id,t.n]));
+const S = {
+  tools:new Set(TOOLS.filter(t=>t.def).map(t=>t.id)),
+  cuisines:new Set(['한식','양식']),
+  pantry:new Set(PANTRY.filter(p=>p.def).map(p=>p.id)),
+  mart:'emart', seed:7, martTotals:{}
+};
+
+/* ── 입력 UI ── */
+function chipHTML(id,label,on){return '<button type="button" class="chip" data-id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+label+'</button>';}
+$('#tools').innerHTML = TOOLS.map(t=>chipHTML(t.id,t.n,S.tools.has(t.id))).join('');
+$('#cuisines').innerHTML = CUISINES.map(c=>chipHTML(c,c,S.cuisines.has(c))).join('');
+$('#pantry').innerHTML = PANTRY.map(p=>chipHTML(p.id,p.n,S.pantry.has(p.id))).join('');
+function wireChips(sel,set){
+  $(sel).addEventListener('click',e=>{
+    const b=e.target.closest('.chip'); if(!b) return;
+    const id=b.dataset.id;
+    if(set.has(id)) set.delete(id); else set.add(id);
+    b.setAttribute('aria-pressed', set.has(id)?'true':'false');
+    run();
+  });
+}
+wireChips('#tools',S.tools); wireChips('#cuisines',S.cuisines); wireChips('#pantry',S.pantry);
+document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
+  const inp=$('#'+b.dataset.step); const v=+inp.value + (+b.dataset.d);
+  inp.value=Math.min(+inp.max,Math.max(+inp.min,v)); run();
+}));
+['#budget','#days','#people','#mpd','#spice','#diet'].forEach(s=>$(s).addEventListener('change',run));
+let regionTimer;
+$('#region').addEventListener('input',()=>{clearTimeout(regionTimer); regionTimer=setTimeout(run,350);});
+$('#plan').addEventListener('click',run);
+$('#reroll').addEventListener('click',()=>{S.seed=(S.seed*1664525+1013904223)%4294967296; run();});
+$('#marts').addEventListener('click',e=>{
+  const b=e.target.closest('.mart'); if(!b) return; S.mart=b.dataset.id; run();
+});
+
+/* ── 지역 ── */
+function resolveRegion(txt){
+  const t=(txt||'').replace(/\s/g,'');
+  for(const r of REGIONS) for(const k of r.k) if(t.includes(k)) return r;
+  return {k:[],n:(txt||'').trim()||'전국',m:PROVINCE,unknown:true};
+}
+function unitInfo(id,mk,reg){
+  const g=ING[id], m=MART[mk];
+  const mult = FRESH_AISLES.has(g.a) ? m.f : m.p;
+  const island = reg.island ? 1.07 : 1;
+  const bulk = m.bulk||1, bd = m.bd||1;
+  return {pq:g.pq*bulk, price:Math.round(g.p*mult*island*bulk*bd/10)*10};
+}
+
+/* ── 설정 읽기 ── */
+function readCfg(){
+  const reg = resolveRegion($('#region').value);
+  if(!reg.m.includes(S.mart)) S.mart = reg.m[0];
+  return {
+    reg, mart:S.mart,
+    budget:+$('#budget').value||0, days:+$('#days').value||1,
+    people:+$('#people').value||1, mpd:+$('#mpd').value||1,
+    spice:+$('#spice').value, diet:$('#diet').value,
+    tools:S.tools, cuisines:S.cuisines,
+    owned:new Set(PANTRY.filter(p=>S.pantry.has(p.id)).flatMap(p=>p.ids))
+  };
+}
+function hasTools(r,tools){
+  return r.tools.every(t => Array.isArray(t) ? t.some(x=>tools.has(x)) : tools.has(t));
+}
+function dietOK(r,diet){
+  const tags=Object.keys(r.ing).map(i=>ING[i].d);
+  if(diet==='nopork') return !tags.includes('meat-pork');
+  if(diet==='nofish') return !tags.includes('fish');
+  if(diet==='veg') return !tags.some(t=>t==='fish'||t.startsWith('meat-'));
+  return true;
+}
+function candidates(cfg){
+  const base = R.filter(r=>hasTools(r,cfg.tools) && dietOK(r,cfg.diet));
+  let c = base.filter(r=>r.sp<=cfg.spice && (cfg.cuisines.size===0||cfg.cuisines.has(r.c)));
+  const notes=[];
+  if(c.length<4){ c = base.filter(r=>r.sp<=cfg.spice); if(c.length>=4) notes.push('고른 종류만으로는 식단이 안 나와서 다른 종류도 섞었습니다.'); }
+  if(c.length<4){ c = base.slice(); if(c.length>=4) notes.push('매운맛 조건까지 풀어야 식단이 나옵니다.'); }
+  if(c.length<7){
+    const pool=R.filter(r=>dietOK(r,cfg.diet)&&r.sp<=cfg.spice&&(cfg.cuisines.size===0||cfg.cuisines.has(r.c)));
+    let best=null;
+    for(const t of TOOLS){
+      if(cfg.tools.has(t.id)) continue;
+      const n=pool.filter(r=>hasTools(r,new Set([...cfg.tools,t.id]))).length;
+      if(!best||n>best.n) best={t,n};
+    }
+    notes.push('지금 조건으로 만들 수 있는 요리가 '+c.length+'가지뿐이라 같은 요리가 여러 번 나옵니다.');
+    if(best&&best.n>c.length) notes.push(best.t.n+' 하나만 더 있으면 '+best.n+'가지로 늘어납니다.');
+  }
+  return {list:c, notes};
+}
+const minShelf = r => Math.min(...Object.keys(r.ing).map(i=>ING[i].s));
+
+/* ── 식단 생성 ── */
+function rng(seed){let a=seed>>>0; return()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+
+function build(cfg,cands,par,priceFn){
+  const slots=cfg.days*cfg.mpd, basket={}, counts={}, meals=[];
+  const cap=par.cap==='free'?slots:Math.max(1,Math.min(par.cap,slots));
+  const rand=rng(par.seed);
+  for(let s=0;s<slots;s++){
+    const mi=s%cfg.mpd, isBreakfast=(cfg.mpd===3&&mi===0);
+    let best=null,bestScore=Infinity;
+    for(const r of cands){
+      const used=counts[r.id]||0;
+      if(used>=cap && cands.length*cap>=slots) continue;
+      let sc=marginal(r,basket,cfg,priceFn);
+      sc += used*par.rep;
+      if(!used) sc -= par.vari;
+      if(isBreakfast && !r.q) sc += 3000;
+      if(!isBreakfast && r.q) sc += 400;
+      sc += rand()*par.jit;
+      if(sc<bestScore){bestScore=sc;best=r;}
+    }
+    if(!best) break;
+    counts[best.id]=(counts[best.id]||0)+1;
+    for(const [id,q] of Object.entries(best.ing)) basket[id]=(basket[id]||0)+q*cfg.people;
+    meals.push({mi,r:best});
+  }
+  for(let mi=0;mi<cfg.mpd;mi++){
+    const g=meals.filter(m=>m.mi===mi);
+    g.sort((a,b)=>minShelf(a.r)-minShelf(b.r));
+    g.forEach((m,i)=>{m.day=i;});
+  }
+  dedupeDays(meals,cfg);
+  meals.sort((a,b)=>a.day-b.day||a.mi-b.mi);
+  const bill=priceBasket(basket,cfg,priceFn);
+  return {meals,basket,...bill,distinct:Object.keys(counts).length};
+}
+/* 같은 요리가 하루에 두 번 오지 않게 자리를 맞바꾼다 */
+function dedupeDays(meals,cfg){
+  for(let pass=0;pass<4;pass++){
+    let moved=false;
+    for(let d=0;d<cfg.days;d++){
+      const today=meals.filter(m=>m.day===d);
+      for(let i=0;i<today.length;i++) for(let j=i+1;j<today.length;j++){
+        const a=today[i], b=today[j];
+        if(a.r.id!==b.r.id) continue;
+        const swap=meals.find(m=>m.mi===b.mi && m.day!==d && m.r.id!==b.r.id
+          && !meals.some(x=>x.day===d && x!==b && x.r.id===m.r.id)
+          && !meals.some(x=>x.day===m.day && x!==m && x.r.id===b.r.id));
+        if(swap){ const t=swap.day; swap.day=d; b.day=t; moved=true; }
+      }
+    }
+    if(!moved) break;
+  }
+}
+function marginal(r,basket,cfg,priceFn){
+  let c=0;
+  for(const [id,q] of Object.entries(r.ing)){
+    if(cfg.owned.has(id)) continue;
+    const cur=basket[id]||0, need=q*cfg.people, {pq,price}=priceFn(id);
+    c += (Math.ceil((cur+need)/pq-1e-9)-Math.ceil(cur/pq-1e-9))*price;
+  }
+  return c;
+}
+function priceBasket(basket,cfg,priceFn){
+  const lines=[]; let sub=0;
+  for(const [id,need] of Object.entries(basket)){
+    if(cfg.owned.has(id)) continue;
+    const {pq,price}=priceFn(id), packs=Math.ceil(need/pq-1e-9), cost=packs*price;
+    sub+=cost;
+    lines.push({id,need,packs,pq,price,cost,left:packs*pq-need});
+  }
+  lines.sort((a,b)=>AISLES.indexOf(ING[a.id].a)-AISLES.indexOf(ING[b.id].a)||b.cost-a.cost);
+  const m=MART[cfg.mart];
+  const fee = (m.fee && sub>0 && sub<m.feeFree) ? (cfg.reg.island? m.fee*2 : m.fee) : 0;
+  return {lines,sub,fee,total:sub+fee};
+}
+function plan(cfg,cands){
+  const priceFn = id => unitInfo(id,cfg.mart,cfg.reg);
+  const cache={}; const pf = id => cache[id] || (cache[id]=priceFn(id));
+  let feasible=null, cheapest=null;
+  for(const vari of [0,1200,2600,4200]) for(const rep of [900,2600]) for(const cap of [1,2,3,5,'free']){
+    const p=build(cfg,cands,{vari,rep,cap,jit:vari?260:60,seed:S.seed+vari+rep},pf);
+    if(!cheapest||p.total<cheapest.total) cheapest=p;
+    if(p.total<=cfg.budget){
+      if(!feasible||p.distinct>feasible.distinct||(p.distinct===feasible.distinct&&p.total<feasible.total)) feasible=p;
+    }
+  }
+  return {p:feasible||cheapest, fits:!!feasible, cheapest};
+}
+function cheapPlanFor(cfg,cands,mart){
+  const c={...cfg,mart}, pf=id=>unitInfo(id,mart,cfg.reg);
+  const cache={}; const f=id=>cache[id]||(cache[id]=pf(id));
+  let best=null;
+  for(const rep of [900,2200]){
+    const p=build(c,cands,{vari:0,rep,cap:'free',jit:60,seed:S.seed+rep},f);
+    if(!best||p.total<best.total) best=p;
+  }
+  return best;
+}
+</script>
+
+<script>
+const WHEN={1:['저녁'],2:['점심','저녁'],3:['아침','점심','저녁']};
+function qty(id,v){
+  const u=ING[id].u;
+  if(u==='g'&&v>=1000) return (Math.round(v/100)/10)+'kg';
+  if(u==='ml'&&v>=1000) return (Math.round(v/100)/10)+'L';
+  return (Math.round(v*10)/10)+u;
+}
+function toolNames(r){
+  return r.tools.map(t=>Array.isArray(t)?t.map(x=>TOOLNAME[x]).join(' 또는 '):TOOLNAME[t]).join(', ');
+}
+function renderMarts(cfg){
+  const max=Math.max(...cfg.reg.m.map(k=>S.martTotals[k]||0),1);
+  $('#marts').innerHTML = cfg.reg.m.map(k=>{
+    const m=MART[k], tot=S.martTotals[k]||0, on=k===cfg.mart;
+    return '<button type="button" class="mart" data-id="'+k+'" aria-pressed="'+(on?'true':'false')+'">'
+      +'<b>'+m.n+'</b><span class="mtot">'+(tot?won(tot)+'원':'—')+'</span>'
+      +'<span class="bar"><i style="width:'+(tot/max*100).toFixed(1)+'%"></i></span>'
+      +'<small>'+m.note+'</small></button>';
+  }).join('');
+}
+function renderSummary(res,cfg){
+  const {p}=res, slots=cfg.days*cfg.mpd, servings=slots*cfg.people;
+  const pct=Math.min(100,p.total/Math.max(cfg.budget,1)*100), over=p.total>cfg.budget;
+  const left=cfg.budget-p.total;
+  $('#summary').innerHTML =
+   '<div class="stat hero"><div class="k">장보기 총액</div><div class="v">'+won(p.total)+'<small>원</small></div>'
+     +'<div class="s">'+MART[cfg.mart].n+' 기준'+(p.fee?' · 배송비 '+won(p.fee)+'원 포함':'')+'</div></div>'
+   +'<div class="stat"><div class="k">예산 '+won(cfg.budget)+'원</div><div class="v" style="color:'+(over?'var(--danger)':'var(--ink)')+'">'
+     +(over?'−':'')+won(Math.abs(left))+'<small>원 '+(over?'모자람':'남음')+'</small></div>'
+     +'<div class="budgetbar'+(over?' over':'')+'"><i style="width:'+pct.toFixed(1)+'%"></i></div></div>'
+   +'<div class="stat"><div class="k">한 끼 단가</div><div class="v">'+won(p.total/servings)+'<small>원</small></div>'
+     +'<div class="s">'+cfg.people+'명 × '+slots+'끼 = '+servings+'인분</div></div>'
+   +'<div class="stat"><div class="k">하루 식비</div><div class="v">'+won(p.total/cfg.days)+'<small>원</small></div>'
+     +'<div class="s">'+cfg.days+'일 / 하루 '+cfg.mpd+'끼</div></div>'
+   +'<div class="stat"><div class="k">요리 가짓수</div><div class="v">'+p.distinct+'<small>가지</small></div>'
+     +'<div class="s">품목 '+p.lines.length+'개 구매</div></div>';
+}
+function maxDaysFit(cfg,cands){
+  for(let d=cfg.days-1;d>=1;d--){
+    const c={...cfg,days:d};
+    if(cheapPlanFor(c,cands,cfg.mart).total<=cfg.budget) return d;
+  }
+  return 0;
+}
+function renderVerdict(res,cfg,cands,notes){
+  const {p,fits}=res, box=$('#verdict');
+  let cheapMart=cfg.mart, cheapTot=S.martTotals[cfg.mart]||p.total;
+  for(const k of cfg.reg.m) if(S.martTotals[k] && S.martTotals[k]<cheapTot){cheapTot=S.martTotals[k];cheapMart=k;}
+  const extra = notes.length? '<p>'+notes.join(' ')+'</p>' : '';
+  if(!fits){
+    const d=maxDaysFit(cfg,cands), items=[];
+    if(cheapMart!==cfg.mart) items.push(MART[cheapMart].n+'에서 사면 '+won(cheapTot)+'원 — '+won(p.total-cheapTot)+'원 아낍니다.');
+    if(d>0) items.push('같은 예산으로는 '+d+'일치까지 됩니다. (지금은 '+cfg.days+'일치)');
+    if(cfg.mpd>1) items.push('하루 '+cfg.mpd+'끼를 '+(cfg.mpd-1)+'끼로 줄이면 약 '+won(p.total/cfg.mpd)+'원 줄어듭니다.');
+    items.push('예산을 '+won(Math.ceil((p.total-cfg.budget)/1000)*1000)+'원 더 잡으면 이 식단 그대로 갑니다.');
+    box.innerHTML='<div class="alert"><div><h3>예산이 '+won(p.total-cfg.budget)+'원 모자랍니다</h3>'
+      +'<p>가장 싸게 짜도 '+won(p.total)+'원입니다. 아래 중 하나를 고르세요.</p><ul><li>'+items.join('</li><li>')+'</li></ul>'+extra+'</div></div>';
+  }else if(p.total<cfg.budget*0.72){
+    const d2=cfg.budget-p.total;
+    box.innerHTML='<div class="alert ok"><div><h3>예산이 '+won(d2)+'원 남습니다</h3>'
+      +'<p>기간을 늘리거나 인원을 올려도 됩니다. 같은 예산이면 '+Math.floor(cfg.budget/(p.total/cfg.days))+'일치까지 짤 수 있습니다.</p>'+extra+'</div></div>';
+  }else{
+    box.innerHTML = extra? '<div class="alert ok"><div><h3>조건을 조금 풀었습니다</h3>'+extra+'</div></div>' : '';
+  }
+}
+function renderReceipt(res,cfg){
+  const {p}=res;
+  let h='<div class="rhead"><h3>'+MART[cfg.mart].n+'</h3><span class="num">'+cfg.reg.n+' · '+cfg.days+'일 / '+cfg.people+'명</span></div>';
+  for(const a of AISLES){
+    const rows=p.lines.filter(l=>ING[l.id].a===a);
+    if(!rows.length) continue;
+    h+='<div class="aisle"><span class="eyebrow">'+a+'</span>';
+    for(const l of rows){
+      const g=ING[l.id];
+      h+='<div class="item"><span class="nm">'+g.n+(l.packs>1?' <span class="tag">'+l.packs+'개</span>':'')+'</span>'
+       +'<span class="pr">'+won(l.cost)+'</span>'
+       +'<span class="sp">'+g.pl+' 단위 · 이번에 쓰는 양 '+qty(l.id,l.need)
+       +(l.left>g.pq*0.35?' · <em>'+qty(l.id,l.left)+' 남음</em>':'')+'</span></div>';
+    }
+    h+='</div>';
+  }
+  h+='<div class="rtot"><div><span>품목 '+p.lines.length+'개</span><span>'+won(p.sub)+'원</span></div>';
+  if(p.fee) h+='<div><span>배송비</span><span>'+won(p.fee)+'원</span></div>';
+  h+='<div class="grand"><span>합계</span><span>'+won(p.total)+'원</span></div>'
+   +'<div class="'+(cfg.budget-p.total<0?'left neg':'left')+'"><span>예산 '+won(cfg.budget)+'원</span><span>'
+   +(cfg.budget-p.total<0?'−':'')+won(Math.abs(cfg.budget-p.total))+'원 '+(cfg.budget-p.total<0?'초과':'남음')+'</span></div></div>';
+  const ow=[...cfg.owned].filter(id=>ING[id]).map(id=>ING[id].n);
+  if(ow.length) h+='<div class="owned">집에 있다고 체크해서 뺀 것 — '+ow.join(', ')+'</div>';
+  $('#receipt').innerHTML=h;
+}
+function renderDays(res,cfg){
+  const {p}=res, byDay={};
+  p.meals.forEach(m=>{(byDay[m.day]=byDay[m.day]||[]).push(m);});
+  const labels=WHEN[cfg.mpd];
+  $('#days-out').innerHTML=Object.keys(byDay).sort((a,b)=>a-b).map(d=>{
+    const list=byDay[d], mins=list.reduce((s,m)=>s+m.r.t,0);
+    return '<div class="day"><header><b>'+(+d+1)+'일차</b><span class="num">조리 '+mins+'분</span></header>'
+      + list.map(m=>{
+        const r=m.r, ms=minShelf(r);
+        const ing=Object.entries(r.ing).map(([id,q])=>'<span>'+ING[id].n+' '+qty(id,q*cfg.people)+'</span>').join('');
+        return '<details class="meal"><summary><span class="when">'+labels[m.mi]+'</span>'
+          +'<span class="dish">'+r.n+'<i>'+r.c+(r.sp>=2?' · 매움':'')+'</i></span>'
+          +'<span class="mins">'+r.t+'분</span></summary>'
+          +'<div class="detail">'
+          +'<span class="lab">재료 '+cfg.people+'인분</span><div class="ilist">'+ing+'</div>'
+          +'<span class="lab">쓰는 도구</span><div>'+toolNames(r)+(ms<=4?' <span class="tag fresh">신선재료 먼저</span>':'')+'</div>'
+          +'<span class="lab">만드는 법</span><ol><li>'+r.steps.join('</li><li>')+'</li></ol>'
+          +'</div></details>';
+      }).join('')+'</div>';
+  }).join('');
+}
+function renderAfter(res,cfg){
+  const {p}=res;
+  const lo=p.lines.filter(l=>l.left>0 && l.left/l.pq>0.08).sort((a,b)=>b.left/b.pq-a.left/a.pq).slice(0,9);
+  $('#leftovers').innerHTML = lo.length
+    ? lo.map(l=>'<div class="lo"><b>'+ING[l.id].n+'</b><span>'+qty(l.id,l.left)+' 남음</span></div>').join('')
+    : '<p class="tip">규격에 딱 맞게 떨어집니다. 남는 재료가 거의 없습니다.</p>';
+  const lastDay={};
+  p.meals.forEach(m=>{Object.keys(m.r.ing).forEach(id=>{lastDay[id]=Math.max(lastDay[id]||0,m.day+1);});});
+  const tips=[];
+  for(const l of p.lines){
+    const g=ING[l.id];
+    if(g.s<=14 && lastDay[l.id]>g.s) tips.push('<b>'+g.n+'</b>은(는) '+lastDay[l.id]+'일차까지 쓰는데 냉장 '+g.s+'일이면 상합니다. 사 온 날 한 끼 분량씩 나눠 냉동하세요.');
+  }
+  if(p.basket.rice) tips.push('<b>밥</b>은 첫날 '+Math.ceil(p.basket.rice/300)+'인분을 몰아 지어 한 끼씩 소분해 두면 매번 밥솥을 돌리지 않아도 됩니다.');
+  if(p.basket.greenonion) tips.push('<b>대파</b> 한 단은 산 날 전부 썰어 냉동하세요. 그대로 두면 절반은 버립니다.');
+  if(lo[0]) tips.push('남는 <b>'+ING[lo[0].id].n+' '+qty(lo[0].id,lo[0].left)+'</b>은 다음 장보기 목록에서 빼면 그만큼 예산이 줄어듭니다.');
+  if(MART[cfg.mart].bulk) tips.push('창고형은 용량이 두 배라 못 쓰는 양이 생깁니다. 위 남는 재료가 많으면 일반 마트가 실제로 더 쌉니다.');
+  $('#tips').innerHTML = tips.slice(0,5).map(t=>'<p class="tip" style="margin-bottom:9px">'+t+'</p>').join('') || '<p class="tip">기간 안에 다 소진되는 구성입니다.</p>';
+}
+
+/* ── 실행 ── */
+function run(){
+  const cfg=readCfg();
+  const {list:cands,notes}=candidates(cfg);
+  if(!cands.length){
+    $('#verdict').innerHTML='<div class="alert"><div><h3>만들 수 있는 요리가 없습니다</h3><p>조리도구를 하나도 안 골랐거나 조건이 너무 좁습니다. 냄비나 프라이팬 중 하나는 체크해 주세요.</p></div></div>';
+    $('#summary').innerHTML=''; $('#receipt').innerHTML=''; $('#days-out').innerHTML='';
+    $('#leftovers').innerHTML=''; $('#tips').innerHTML=''; renderMarts(cfg); return;
+  }
+  S.martTotals={};
+  for(const k of cfg.reg.m) S.martTotals[k]=cheapPlanFor(cfg,cands,k).total;
+  const res=plan(cfg,cands);
+  renderMarts(cfg); renderSummary(res,cfg); renderVerdict(res,cfg,cands,notes);
+  renderReceipt(res,cfg); renderDays(res,cfg); renderAfter(res,cfg);
+  $('#stateline').textContent = cfg.reg.n+' · '+MART[cfg.mart].n+' · '+cfg.days+'일 × '+cfg.mpd+'끼 · '+cfg.people+'명';
+}
+run();
+</script>
