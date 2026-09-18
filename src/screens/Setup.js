@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Pressable } from 'react-native';
+import { View, Text, ScrollView, TextInput, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { TOOLS, PANTRY, MART } from '../data';
 import { won } from '../engine';
-import { Chip, Seg, Stepper, Label, SectionHeader, TextButton, Badge } from '../ui';
+import { Chip, Seg, Stepper, Label, TextButton, Badge } from '../ui';
 import { sp, radius, type, num } from '../theme';
 
 const BUDGETS = [30000, 50000, 100000, 200000];
@@ -11,6 +12,7 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
   const [region, setRegion] = useState(st.region);
   const [budget, setBudget] = useState(String(st.budget));
   const timer = useRef();
+  const [open, setOpen] = useState({});
 
   useEffect(()=>{ setRegion(st.region); }, [st.region]);
   useEffect(()=>{ setBudget(String(st.budget)); }, [st.budget]);
@@ -20,12 +22,35 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
     ...s, [key]: s[key].includes(id) ? s[key].filter(x=>x!==id) : [...s[key], id]
   }));
 
-  const Section = ({ title, hint, children }) => (
-    <View style={{ paddingTop:sp.xxxl }}>
-      <SectionHeader t={t} title={title} hint={hint} />
-      {children}
-    </View>
-  );
+  const toggle = key => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpen(o => ({ ...o, [key]: !o[key] }));
+  };
+
+  /* 제목만 보이다가 누르면 아래로 펼쳐진다 */
+  const Section = ({ id, title, summary, hint, children }) => {
+    const on = !!open[id];
+    return (
+      <View style={{ marginTop:sp.m }}>
+        <Pressable onPress={()=>toggle(id)} accessibilityRole="button" accessibilityState={{ expanded:on }}
+          style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.s,
+            backgroundColor:t.surface, borderRadius:radius.md,
+            paddingHorizontal:sp.l, paddingVertical:14, opacity:pressed?0.7:1 })}>
+          <Text style={[type.subtitle,{ color:t.ink }]}>{title}</Text>
+          <Text style={[type.caption,{ color:t.ink3, flex:1, textAlign:'right' }]} numberOfLines={1}>
+            {on ? '' : summary}
+          </Text>
+          <Ionicons name={on ? 'chevron-up' : 'chevron-down'} size={16} color={t.ink3} />
+        </Pressable>
+        {on && (
+          <View style={{ paddingTop:sp.l, paddingHorizontal:sp.xs, paddingBottom:sp.s }}>
+            {hint ? <Text style={[type.caption,{ color:t.ink3, marginBottom:sp.m, lineHeight:19 }]}>{hint}</Text> : null}
+            {children}
+          </View>
+        )}
+      </View>
+    );
+  };
   const input = {
     backgroundColor:t.surface, borderRadius:radius.md, paddingHorizontal:sp.l, paddingVertical:14,
     color:t.ink, fontSize:16
@@ -39,7 +64,7 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
     <ScrollView style={{ flex:1 }} contentContainerStyle={{ paddingHorizontal:sp.xl, paddingBottom:sp.xxxl }}
       keyboardShouldPersistTaps="handled">
 
-      <Section title="사는 지역" hint="지도에서 핀으로 찍거나, 시·군·구를 직접 적으세요.">
+      <Section id="region" summary={st.region || '정하지 않음'} title="사는 지역" hint="지도에서 핀으로 찍거나, 시·군·구를 직접 적으세요.">
         <Pressable onPress={onOpenMap} accessibilityRole="button"
           style={({pressed})=>({ flexDirection:'row', alignItems:'center', justifyContent:'center', gap:6,
             backgroundColor:t.primarySoft, borderRadius:radius.md, height:50, marginBottom:sp.s, opacity:pressed?0.6:1 })}>
@@ -55,7 +80,7 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
           style={input} />
       </Section>
 
-      <Section title="자주 가는 마트"
+      <Section id="mart" summary={picked.length ? `${MART[result.cfg.mart].n}${picked.length>1 ? ` 외 ${picked.length-1}곳` : ''}` : '전체'} title="자주 가는 마트"
         hint={`여러 곳을 고르면 그중 가장 싼 곳으로 계산합니다. 지금은 ${MART[result.cfg.mart].n} 기준. 마트별 금액은 실제 조사값이 아닌 추정치입니다.`}>
         <Pressable onPress={()=>set(s=>({ ...s, marts: picked.length === marts.length ? [] : [...marts] }))}
           style={({pressed})=>({ alignSelf:'flex-start', marginBottom:sp.s, paddingHorizontal:14, paddingVertical:8,
@@ -93,18 +118,18 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
         })}
       </Section>
 
-      <Section title="집에 있는 조리도구" hint="가진 도구로 만들 수 있는 요리만 고릅니다.">
+      <Section id="tools" summary={`${st.tools.length}가지`} title="집에 있는 조리도구" hint="가진 도구로 만들 수 있는 요리만 고릅니다.">
         <View style={{ flexDirection:'row', flexWrap:'wrap', gap:sp.s }}>
           {TOOLS.map(x => <Chip key={x.id} t={t} label={x.n} on={st.tools.includes(x.id)} onPress={()=>tog('tools', x.id)} />)}
         </View>
       </Section>
 
-      <Section title="못 먹는 것" hint="고른 재료가 들어간 요리는 아예 뺍니다.">
+      <Section id="diet" summary={({none:'없음',nopork:'돼지',nofish:'해산물',veg:'채식'})[st.diet]} title="못 먹는 것" hint="고른 재료가 들어간 요리는 아예 뺍니다.">
         <Seg t={t} value={st.diet} onChange={v=>set(s=>({ ...s, diet:v }))}
           options={[{v:'none',n:'없음'},{v:'nopork',n:'돼지'},{v:'nofish',n:'해산물'},{v:'veg',n:'채식'}]} />
       </Section>
 
-      <Section title="예산과 기간" hint="이 금액 안에서 이 기간을 버티는 장보기를 짭니다.">
+      <Section id="budget" summary={`${won(st.budget)}원 · ${st.days}일 · ${st.people}명 · 하루 ${st.mpd}끼`} title="예산과 기간" hint="이 금액 안에서 이 기간을 버티는 장보기를 짭니다.">
         <View style={{ flexDirection:'row', alignItems:'center', gap:sp.m }}>
           <TextInput
             value={budget} keyboardType="number-pad"
@@ -130,7 +155,7 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
           options={[{v:1,n:'저녁만'},{v:2,n:'두 끼'},{v:3,n:'세 끼'}]} />
       </Section>
 
-      <Section title="이미 집에 있는 것" hint="체크한 건 장보기 목록과 예산에서 뺍니다.">
+      <Section id="pantry" summary={st.pantry.length ? `${st.pantry.length}가지` : '없음'} title="이미 집에 있는 것" hint="체크한 건 장보기 목록과 예산에서 뺍니다.">
         <View style={{ flexDirection:'row', flexWrap:'wrap', gap:sp.s }}>
           {PANTRY.map(p => <Chip key={p.id} t={t} label={p.n} on={st.pantry.includes(p.id)} onPress={()=>tog('pantry', p.id)} />)}
         </View>

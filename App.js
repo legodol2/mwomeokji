@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Pressable, Platform, ActivityIndicator, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { MART } from './src/data';
@@ -26,12 +27,12 @@ const DEFAULT = {
   cart:{}, shopMode:'cart'
 };
 const TABS = [
-  { k:'menu',  n:'홈',     e:'🏠' },
-  { k:'plan',  n:'식단',   e:'🍽️' },
-  { k:'shop',  n:'장보기', e:'🛒' },
-  { k:'setup', n:'설정',   e:'⚙️' }
+  { k:'menu',  n:'홈',     i:'home' },
+  { k:'plan',  n:'식단',   i:'restaurant' },
+  { k:'shop',  n:'장보기', i:'cart' },
+  { k:'setup', n:'설정',   i:'settings' }
 ];
-const TITLES = { menu:'무얼 먹을까', plan:'앱이 짠 식단', shop:'장보기', setup:'설정' };
+const TITLES = { menu:'뭐먹고', plan:'앱이 짠 식단', shop:'장보기', setup:'설정' };
 
 export default function App(){
   const t = useTheme();
@@ -120,7 +121,7 @@ export default function App(){
       <SafeAreaView style={{ flex:1 }} edges={['top','left','right','bottom']}>
 
         <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.m, paddingBottom:sp.s }}>
-          <Text style={[type.title,{ color:t.ink }]}>{TITLES[tab]}</Text>
+          <Text style={[type.title,{ color: tab === 'menu' ? t.ink3 : t.ink }]}>{TITLES[tab]}</Text>
           <Text style={[type.caption,{ color:t.ink3, marginTop:2 }]} numberOfLines={1}>
             {result.cfg.reg.n} · {MART[result.cfg.mart].n} · {st.days}일 × {st.mpd}끼 · {st.people}명
             {bill && bill.total > 0 ? `  ·  ${won(bill.total)}원` : ''}
@@ -165,7 +166,8 @@ export default function App(){
                 style={({pressed})=>({ flex:1, alignItems:'center', paddingTop:sp.s,
                   paddingBottom: Platform.OS==='ios' ? sp.xs : sp.s, opacity: pressed ? 0.6 : 1 })}>
                 <View>
-                  <Text style={{ fontSize:22, lineHeight:27, opacity: on ? 1 : 0.4 }}>{x.e}</Text>
+                  <Ionicons name={on ? x.i : `${x.i}-outline`} size={23}
+                    color={on ? t.primary : t.ink3} />
                   {badge ? (
                     <View style={{ position:'absolute', top:-2, right:-12, backgroundColor:t.primary, borderRadius:999,
                                    minWidth:17, paddingHorizontal:4.5, paddingVertical:1.5 }}>

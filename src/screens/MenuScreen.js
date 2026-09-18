@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { R, CUISINES } from '../data';
 import { won, addCost, hasTools, dietOK, toolNames } from '../engine';
 import RecipeSheet from '../RecipeSheet';
-import { Chip, Seg, Bar, Label, PrimaryButton, Thumb } from '../ui';
+import { Chip, Seg, Bar, Label, PrimaryButton, TextButton, Thumb } from '../ui';
 import { sp, radius, type, num } from '../theme';
 
 const SORTS = [{ v:'cost', n:'싼 순' }, { v:'time', n:'빠른 순' }, { v:'cuisine', n:'종류순' }];
@@ -33,10 +34,66 @@ function AddControl({ n, t, onAdd, onSub }){
   );
 }
 
+function FilterSheet({ open, onClose, st, set, sort, setSort, onlyMakeable, setOnlyMakeable, t, count }){
+  const togCuisine = c => set(s => ({
+    ...s, cuisines: s.cuisines.includes(c) ? s.cuisines.filter(x=>x!==c) : [...s.cuisines, c]
+  }));
+  return (
+    <Modal visible={open} animationType="slide" transparent onRequestClose={onClose}>
+      <Pressable onPress={onClose} style={{ flex:1, backgroundColor:'rgba(0,0,0,0.4)' }} />
+      <View style={{ backgroundColor:t.bg, borderTopLeftRadius:24, borderTopRightRadius:24, paddingBottom:sp.xxl }}>
+        <View style={{ alignItems:'center', paddingTop:sp.m }}>
+          <View style={{ width:36, height:4, borderRadius:2, backgroundColor:t.line2 }} />
+        </View>
+        <ScrollView contentContainerStyle={{ paddingHorizontal:sp.xl, paddingTop:sp.l }}>
+          <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'center' }}>
+            <Text style={[type.title,{ color:t.ink, fontSize:22 }]}>필터</Text>
+            <Text style={[type.caption,{ color:t.ink3 }]}>메뉴 {count}가지</Text>
+          </View>
+
+          <Label t={t} style={{ marginTop:sp.xxl, marginBottom:sp.s }}>입맛</Label>
+          <View style={{ flexDirection:'row', flexWrap:'wrap', gap:sp.s }}>
+            <Chip t={t} label="전체" on={st.cuisines.length === 0} onPress={()=>set(s=>({ ...s, cuisines:[] }))} />
+            {CUISINES.map(c => <Chip key={c} t={t} label={c} on={st.cuisines.includes(c)} onPress={()=>togCuisine(c)} />)}
+          </View>
+
+          <Label t={t} style={{ marginTop:sp.xxl, marginBottom:sp.s }}>매운맛</Label>
+          <Seg t={t} value={st.spice} onChange={v=>set(s=>({ ...s, spice:v }))}
+            options={[{v:0,n:'안 매움'},{v:1,n:'약간'},{v:2,n:'보통'},{v:3,n:'아주'}]} />
+
+          <Label t={t} style={{ marginTop:sp.xxl, marginBottom:sp.s }}>정렬</Label>
+          <Seg t={t} value={sort} onChange={setSort}
+            options={SORTS.map(x=>({ v:x.v, n:x.n }))} />
+
+          <Pressable onPress={()=>setOnlyMakeable(v=>!v)} accessibilityRole="switch"
+            accessibilityState={{ checked:onlyMakeable }}
+            style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, marginTop:sp.xxl,
+              paddingVertical:sp.m, opacity:pressed?0.6:1 })}>
+            <View style={{ width:22, height:22, borderRadius:6, borderWidth: onlyMakeable ? 0 : 1.5, borderColor:t.line2,
+                           backgroundColor: onlyMakeable ? t.primary : 'transparent',
+                           alignItems:'center', justifyContent:'center' }}>
+              {onlyMakeable ? <Ionicons name="checkmark" size={14} color={t.onPrimary} /> : null}
+            </View>
+            <View style={{ flex:1 }}>
+              <Text style={[type.body,{ color:t.ink }]}>가진 도구로 만들 수 있는 것만</Text>
+              <Text style={[type.caption,{ color:t.ink3, marginTop:2 }]}>끄면 도구가 없는 요리도 함께 보입니다</Text>
+            </View>
+          </Pressable>
+        </ScrollView>
+
+        <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.s }}>
+          <PrimaryButton t={t} label={`메뉴 ${count}가지 보기`} onPress={onClose} />
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function MenuScreen({ cfg, st, set, cart, setCart, bill, t, onGoShop }){
   const [sort, setSort] = useState('cost');
   const [onlyMakeable, setOnlyMakeable] = useState(true);
   const [sheet, setSheet] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const rows = useMemo(()=>{
     const cs = cfg.cuisines;
@@ -61,27 +118,27 @@ export default function MenuScreen({ cfg, st, set, cart, setCart, bill, t, onGoS
 
   const over = bill.total > cfg.budget;
   const need = cfg.days * cfg.mpd;
+  const filterSummary = [
+    st.cuisines.length ? st.cuisines.join('·') : '전체',
+    ['안 매움','약간 매움','보통','아주 매움'][st.spice],
+    SORTS.find(x=>x.v===sort)?.n
+  ].join(' · ');
 
   return (
     <>
-      <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.l, paddingBottom:sp.l, gap:sp.m }}>
-        <View style={{ flexDirection:'row', flexWrap:'wrap', gap:sp.s }}>
-          <Chip t={t} label="전체" on={st.cuisines.length === 0} onPress={()=>set(s=>({ ...s, cuisines:[] }))} />
-          {CUISINES.map(c => <Chip key={c} t={t} label={c} on={st.cuisines.includes(c)} onPress={()=>togCuisine(c)} />)}
-        </View>
-        <Seg t={t} value={st.spice} onChange={v=>set(s=>({ ...s, spice:v }))}
-          options={[{v:0,n:'안 매움'},{v:1,n:'약간'},{v:2,n:'보통'},{v:3,n:'아주'}]} />
+      <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.s, paddingBottom:sp.m }}>
+        <Pressable onPress={()=>setFilterOpen(true)} accessibilityRole="button"
+          style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.s,
+            backgroundColor:t.surface, borderRadius:radius.md, paddingHorizontal:sp.l, paddingVertical:12,
+            opacity:pressed?0.6:1 })}>
+          <Ionicons name="options-outline" size={18} color={t.ink2} />
+          <Text style={[type.label,{ color:t.ink, fontWeight:'700' }]}>필터</Text>
+          <Text style={[type.caption,{ color:t.ink3, flex:1 }]} numberOfLines={1}>{filterSummary}</Text>
+          <Ionicons name="chevron-forward" size={16} color={t.ink3} />
+        </Pressable>
       </View>
 
       <ScrollView style={{ flex:1 }} contentContainerStyle={{ paddingBottom:sp.xl }}>
-        <View style={{ paddingHorizontal:sp.xl, paddingBottom:sp.m }}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:6, paddingRight:sp.xl }}>
-            {SORTS.map(s => <Chip key={s.v} small tone="soft" t={t} label={s.n} on={sort===s.v} onPress={()=>setSort(s.v)} />)}
-            <View style={{ width:1, backgroundColor:t.line2, marginVertical:6, marginHorizontal:4 }} />
-            <Chip small tone="soft" t={t} label="가진 도구로만" on={onlyMakeable} onPress={()=>setOnlyMakeable(v=>!v)} />
-          </ScrollView>
-        </View>
-
         <View style={{ paddingHorizontal:sp.xl }}>
           <Label t={t} style={{ marginBottom:sp.xs }}>메뉴 {rows.length}가지</Label>
           <Text style={[type.micro,{ color:t.ink3, lineHeight:18, marginBottom:sp.s }]}>
@@ -134,6 +191,10 @@ export default function MenuScreen({ cfg, st, set, cart, setCart, bill, t, onGoS
         <PrimaryButton t={t} disabled={!bill.mealCount} onPress={onGoShop}
           label={bill.mealCount ? `${bill.mealCount}끼 장보기 목록 보기` : '메뉴를 담아 주세요'} />
       </View>
+
+      <FilterSheet open={filterOpen} onClose={()=>setFilterOpen(false)}
+        st={st} set={set} sort={sort} setSort={setSort}
+        onlyMakeable={onlyMakeable} setOnlyMakeable={setOnlyMakeable} t={t} count={rows.length} />
 
       <RecipeSheet recipe={sheet} people={cfg.people} t={t} onClose={()=>setSheet(null)}
         caption={sheet ? `${toolNames(sheet)} 사용` : ''}
