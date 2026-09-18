@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { won, minShelf, WHEN } from '../engine';
 import { advice } from '../advice';
@@ -37,16 +37,33 @@ function Banner({ a, t }){
 }
 
 /* 위쪽 날짜 줄 — 날짜마다 끼니 수만큼 점을 찍는다 */
+const DAY_W = 52;   // 날짜 한 칸 너비 (자동 스크롤 계산에 쓴다)
+
 function DayStrip({ days, counts, value, onChange, t }){
+  const scroller = useRef(null);
+  const [width, setWidth] = useState(0);
+
+  /* 고른 날짜가 화면 밖에 있으면 가운데로 끌어온다 */
+  useEffect(()=>{
+    const i = days.indexOf(value);
+    if(i < 0 || !width) return;
+    const step = DAY_W + sp.s;
+    const max = Math.max(0, days.length*step - sp.s - width);
+    const x = Math.min(max, Math.max(0, i*step + DAY_W/2 - width/2));
+    scroller.current?.scrollTo({ x, animated:true });
+  }, [value, width, days.length]);
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}
+      ref={scroller}
+      onLayout={e=>setWidth(e.nativeEvent.layout.width)}
       contentContainerStyle={{ gap:sp.s, paddingVertical:sp.s }}>
       {days.map(d => {
         const on = d === value;
         return (
           <Pressable key={d} onPress={()=>onChange(d)} accessibilityRole="button"
             accessibilityLabel={`${d+1}일차`} accessibilityState={{ selected:on }}
-            style={({pressed})=>({ alignItems:'center', width:52, paddingVertical:8, borderRadius:radius.md,
+            style={({pressed})=>({ alignItems:'center', width:DAY_W, paddingVertical:8, borderRadius:radius.md,
               backgroundColor: on ? t.primarySoft : 'transparent', opacity: pressed ? 0.6 : 1 })}>
             <Text style={[num,{ color: on ? t.primary : t.ink2, fontSize:17, fontWeight: on ? '800' : '600' }]}>{d+1}</Text>
             <Text style={{ color: on ? t.primary : t.ink3, fontSize:10.5, marginTop:1 }}>일차</Text>
