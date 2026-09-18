@@ -81,7 +81,14 @@ web-preview/            같은 엔진의 웹 버전 (참고용)
 
 - 위치 권한은 온보딩에서 한 번 묻고, 거부해도 지도를 직접 눌러 핀을 찍으면 됩니다.
 - Expo Go에서는 권한 안내문이 Expo Go 것으로 뜹니다. 직접 빌드하면 `app.json`에 적어 둔 한국어 안내문이 나옵니다.
-- **Android 독립 빌드**는 Google Maps API 키가 필요합니다. `app.json`의 `expo.android.config.googleMaps.apiKey`에 넣으세요. (Expo Go로 볼 때는 필요 없습니다.)
+- **Android 독립 빌드**는 Google Maps API 키가 필요합니다. (Expo Go로 볼 때는 필요 없습니다.)
+
+  > ⚠️ **이 저장소는 공개입니다.** 키를 `app.json`에 직접 적어 커밋하면 그대로 공개됩니다. 다음 순서로 넣으세요.
+  > 1. Google Cloud 콘솔에서 **Maps SDK for Android** 키를 만들고, **애플리케이션 제한**을 Android 앱 + 패키지명 `com.mwomeokji.app` + 서명 인증서 지문으로 걸어 둡니다. **API 제한**도 Maps SDK for Android 하나로 좁힙니다.
+  > 2. 키는 파일이 아니라 EAS 비밀값으로 둡니다 — `eas secret:create --name GOOGLE_MAPS_ANDROID_KEY --value <키>`
+  > 3. `app.json`을 `app.config.js`로 바꿔 `process.env.GOOGLE_MAPS_ANDROID_KEY`를 읽게 하고, 키 자체는 절대 커밋하지 않습니다.
+  >
+  > 실수로 커밋했다면 파일에서 지우는 것만으로는 부족합니다. **Google 콘솔에서 그 키를 폐기하고 새로 발급**해야 합니다.
 
 ## 가격에 대해
 
