@@ -111,6 +111,24 @@ web-preview/            같은 엔진의 웹 버전 (참고용)
 
 메뉴 옆 그림은 **이모지**입니다. 글자로 저장되고 기기 글꼴(iOS는 Apple Color Emoji, Android는 Noto Color Emoji)이 그리므로, 앱에 담기는 이미지 파일이 없고 저작권·라이선스 문제가 없습니다. 네트워크도 타지 않아 오프라인에서도 보입니다. 바꾸려면 `src/data.js`의 레시피에서 `e:` 값만 고치면 됩니다.
 
+## 알림과 위젯
+
+**알림** — 설정 > 알림을 켜면 식단 기간만큼 하루 한 번, 그날 먹을 메뉴를 알려 줍니다. 기기 안에서만 뜨는 로컬 알림이라 서버가 필요 없습니다. 식단을 다시 짜면 예약도 함께 갱신됩니다.
+
+**위젯** — 코드는 `targets/widget/`에 들어 있지만 **아직 꺼 둔 상태**입니다. 위젯이 앱의 식단을 읽으려면 App Group이 필요하고, App Group은 Apple 개발자 포털에 등록돼야 하는데 **Xcode에 Apple 계정이 로그인돼 있지 않아** 등록이 안 됩니다.
+
+켜는 순서:
+
+1. Xcode → Settings → Accounts에서 개발자 Apple ID 로그인
+2. `app.json`에 아래 두 가지를 되살립니다
+   ```json
+   "ios": { "entitlements": { "com.apple.security.application-groups": ["group.com.mwomeokji.app"] } },
+   "plugins": [ ..., "@bacons/apple-targets" ]
+   ```
+3. `npx expo prebuild -p ios --clean` → `pod install` → 다시 빌드
+
+위젯은 App Group(`group.com.mwomeokji.app`)의 `widgetTitle`·`widgetBody` 값을 읽습니다. 앱은 식단이 바뀔 때마다 `src/widget.js`에서 그 값을 씁니다.
+
 ## 가격에 대해
 
 마트별 가격 배율(`src/data.js`의 `MART`)은 특정 마트를 조사한 값이 아니라 매장 유형에 따른 **가정**입니다. 또 마트 실시간 가격 API는 공개된 것이 없어서, **국내 대형마트·전통시장의 통상 판매 시세를 넣은 내장 표**에 위 계수를 곱한 **추정치**입니다. 실제 매대 가격은 행사·산지·시기에 따라 20%씩 움직이니 총액은 여유 있게 잡으세요. 시세를 고치려면 `src/data.js`의 `ING`에서 `p`(파는 단위 가격)와 `pq`(단위 수량)만 손보면 됩니다.

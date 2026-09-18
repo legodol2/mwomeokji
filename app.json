@@ -22,7 +22,8 @@
             ]
           }
         }
-      }
+      },
+      "appleTeamId": "7ZK5H7LL83"
     },
     "android": {
       "adaptiveIcon": {
@@ -48,7 +49,8 @@
           "locationWhenInUsePermission": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다."
         }
       ],
-      "./plugins/withSceneDelegate"
+      "./plugins/withSceneDelegate",
+      "./plugins/withLocalNotificationsOnly"
     ]
   }
 }

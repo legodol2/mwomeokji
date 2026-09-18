@@ -162,6 +162,29 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
         </View>
       </Section>
 
+      <Section id="notify" title="알림"
+        summary={st.notify ? `매일 ${st.notifyHour}시` : '꺼짐'}
+        hint="그날 먹을 메뉴를 하루 한 번 알려 드립니다. 식단 기간만큼만 예약되고, 식단을 다시 짜면 알림도 함께 바뀝니다.">
+        <Pressable onPress={()=>set(s2=>({ ...s2, notify:!s2.notify }))} accessibilityRole="switch"
+          accessibilityState={{ checked:st.notify }}
+          style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:sp.s,
+                                 opacity:pressed?0.6:1 })}>
+          <View style={{ width:22, height:22, borderRadius:6, borderWidth: st.notify ? 0 : 1.5, borderColor:t.line2,
+                         backgroundColor: st.notify ? t.primary : 'transparent',
+                         alignItems:'center', justifyContent:'center' }}>
+            {st.notify ? <Ionicons name="checkmark" size={14} color={t.onPrimary} /> : null}
+          </View>
+          <Text style={[type.body,{ color:t.ink, flex:1 }]}>매일 오늘의 메뉴 알림 받기</Text>
+        </Pressable>
+        {st.notify && (
+          <>
+            <Label t={t} style={{ marginTop:sp.l, marginBottom:sp.s }}>알림 시각</Label>
+            <Seg t={t} value={st.notifyHour} onChange={v=>set(s2=>({ ...s2, notifyHour:v }))}
+              options={[{v:7,n:'오전 7시'},{v:9,n:'오전 9시'},{v:11,n:'오전 11시'},{v:17,n:'오후 5시'}]} />
+          </>
+        )}
+      </Section>
+
       <Section id="photos" title="사진 출처"
         summary={`${Object.keys(CREDITS).length}장`}
         hint="메뉴 사진은 위키미디어 공용의 자유 라이선스 사진입니다. 저작자와 라이선스를 아래에 밝힙니다. 이름을 누르면 원본 페이지가 열립니다.">

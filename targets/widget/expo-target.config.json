@@ -1,0 +1,7 @@
+{
+  "type": "widget",
+  "name": "MealWidget",
+  "entitlements": {
+    "com.apple.security.application-groups": ["group.com.mwomeokji.app"]
+  }
+}

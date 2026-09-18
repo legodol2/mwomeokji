@@ -15,6 +15,8 @@ import PlanScreen from './src/screens/PlanScreen';
 import ShoppingScreen from './src/screens/ShoppingScreen';
 import Setup from './src/screens/Setup';
 import LocationPicker from './src/screens/LocationPicker';
+import { syncReminders } from './src/notify';
+import { pushToWidget } from './src/widget';
 
 const KEY = 'mwomeokji.v2';
 const DEFAULT = {
@@ -74,6 +76,16 @@ export default function App(){
 
   const cart = useMemo(()=> cartBill(st.cart, result.cfg), [st.cart, result.cfg]);
   const bill = st.shopMode === 'cart' ? cart : (result.empty ? null : result.p);
+
+  /* 식단이나 알림 설정이 바뀌면 예약을 다시 잡는다 */
+  useEffect(()=>{
+    if(!ready) return;
+    syncReminders({
+      enabled: st.notify, hour: st.notifyHour,
+      meals: result.empty ? null : result.p.meals, mpd: st.mpd
+    });
+    pushToWidget({ meals: result.empty ? null : result.p.meals, mpd: st.mpd, empty: result.empty });
+  }, [ready, st.notify, st.notifyHour, st.mpd, result.empty ? null : result.p?.meals]);
 
   const sig = bill ? st.shopMode + '|' + result.cfg.mart + '|' + bill.lines.map(l=>l.id+':'+l.packs).join(',') : '';
   useEffect(()=>{ setChecked(c => c.sig === sig ? c : { sig, map:{} }); }, [sig]);
