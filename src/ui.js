@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
+import { PHOTOS } from './foodPhotos';
 import { sp, radius, type, num } from './theme';
 
 const hair = StyleSheet.hairlineWidth;
@@ -58,7 +59,14 @@ export function Chip({ label, on, onPress, t, small, tone }){
 }
 
 /* 메뉴 이름 옆 그림 — 기기 글꼴이 그리는 이모지라 앱에 담는 이미지가 없다 */
-export function Thumb({ t, emoji, size = 44, tone }){
+export function Thumb({ t, id, emoji, size = 44, tone }){
+  const photo = id ? PHOTOS[id] : null;
+  if(photo){
+    return (
+      <Image source={photo} resizeMode="cover" accessibilityIgnoresInvertColors
+        style={{ width:size, height:size, borderRadius:size/3, backgroundColor:t.surface }} />
+    );
+  }
   return (
     <View style={{ width:size, height:size, borderRadius:size/3, alignItems:'center', justifyContent:'center',
                    backgroundColor: tone === 'soft' ? t.primarySoft : t.surface }}>

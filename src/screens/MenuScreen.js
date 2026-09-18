@@ -155,7 +155,7 @@ export default function MenuScreen({ cfg, st, set, cart, setCart, bill, t, onGoS
                          borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line }}>
                 <Pressable onPress={()=>setSheet(r)} accessibilityRole="button"
                   style={({pressed})=>({ flex:1, flexDirection:'row', alignItems:'center', gap:sp.m, opacity:pressed?0.5:1 })}>
-                  <Thumb t={t} emoji={r.e} tone={n ? 'soft' : undefined} />
+                  <Thumb t={t} id={r.id} emoji={r.e} tone={n ? 'soft' : undefined} />
                   <View style={{ flex:1 }}>
                   <Text style={{ color:t.ink, fontSize:16, fontWeight: n ? '700' : '500', letterSpacing:-0.2 }}>{r.n}</Text>
                   <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>

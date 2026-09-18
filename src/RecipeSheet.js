@@ -17,7 +17,7 @@ export default function RecipeSheet({ recipe:r, caption, people, t, onClose, foo
         {r && (
           <ScrollView contentContainerStyle={{ paddingHorizontal:sp.xl, paddingTop:sp.l, paddingBottom:sp.l }}>
             <View style={{ flexDirection:'row', alignItems:'center', gap:sp.m }}>
-              <Thumb t={t} emoji={r.e} size={56} tone="soft" />
+              <Thumb t={t} id={r.id} emoji={r.e} size={56} tone="soft" />
               <Text style={[type.title,{ color:t.ink, fontSize:24, flex:1 }]}>{r.n}</Text>
             </View>
             <Text style={[type.caption,{ color:t.ink3, marginTop:sp.m }]}>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, ScrollView, TextInput, Pressable, LayoutAnimation, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { TOOLS, PANTRY, MART } from '../data';
+import { TOOLS, PANTRY, MART, R } from '../data';
+import { CREDITS } from '../foodPhotos';
 import { won } from '../engine';
 import { Chip, Seg, Stepper, Label, TextButton, Badge } from '../ui';
 import { sp, radius, type, num } from '../theme';
@@ -159,6 +160,24 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
         <View style={{ flexDirection:'row', flexWrap:'wrap', gap:sp.s }}>
           {PANTRY.map(p => <Chip key={p.id} t={t} label={p.n} on={st.pantry.includes(p.id)} onPress={()=>tog('pantry', p.id)} />)}
         </View>
+      </Section>
+
+      <Section id="photos" title="사진 출처"
+        summary={`${Object.keys(CREDITS).length}장`}
+        hint="메뉴 사진은 위키미디어 공용의 자유 라이선스 사진입니다. 저작자와 라이선스를 아래에 밝힙니다. 이름을 누르면 원본 페이지가 열립니다.">
+        {R.filter(r => CREDITS[r.id]).map((r,i) => {
+          const c = CREDITS[r.id];
+          return (
+            <Pressable key={r.id} onPress={()=>c.page && Linking.openURL(c.page)}
+              style={({pressed})=>({ paddingVertical:11, borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line,
+                                     opacity:pressed?0.6:1 })}>
+              <Text style={[type.label,{ color:t.ink }]}>{r.n}</Text>
+              <Text style={[type.micro,{ color:t.ink3, marginTop:2, lineHeight:17 }]} numberOfLines={2}>
+                {c.artist} · {c.license}
+              </Text>
+            </Pressable>
+          );
+        })}
       </Section>
 
       <TextButton t={t} label="처음 설정부터 다시 하기" onPress={onRestart} style={{ marginTop:sp.xxxl }} />

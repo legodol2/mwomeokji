@@ -122,7 +122,7 @@ export default function PlanScreen({ result, st, set, t, onFillCart }){
               onPress={()=>setMeal({ ...m, dayLabel:`${shownDay+1}일차`, whenLabel:labels[m.mi] })}
               style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:14,
                 borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line, opacity: pressed ? 0.5 : 1 })}>
-              <Thumb t={t} emoji={m.r.e} />
+              <Thumb t={t} id={m.r.id} emoji={m.r.e} />
               <View style={{ flex:1 }}>
                 <Text style={{ color:t.ink, fontSize:16, fontWeight:'500', letterSpacing:-0.2 }}>{m.r.n}</Text>
                 <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
