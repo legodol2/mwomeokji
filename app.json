@@ -10,7 +10,18 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.mwomeokji.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다."
+        "NSLocationWhenInUseUsageDescription": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다.",
+        "UIApplicationSceneManifest": {
+          "UIApplicationSupportsMultipleScenes": false,
+          "UISceneConfigurations": {
+            "UIWindowSceneSessionRoleApplication": [
+              {
+                "UISceneConfigurationName": "Default Configuration",
+                "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate"
+              }
+            ]
+          }
+        }
       }
     },
     "android": {
@@ -36,7 +47,8 @@
         {
           "locationWhenInUsePermission": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다."
         }
-      ]
+      ],
+      "./plugins/withSceneDelegate"
     ]
   }
 }

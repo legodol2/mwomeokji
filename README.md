@@ -13,6 +13,23 @@ npm run android      # Android 에뮬레이터
 
 **내 폰에서 보기** — App Store/Play에서 **Expo Go**를 깔고, `npm start` 후 뜨는 QR을 카메라(iOS)나 Expo Go(Android)로 찍으면 됩니다. 폰과 맥이 같은 와이파이에 있어야 합니다.
 
+### 내 아이폰에 직접 빌드해 넣기
+
+```bash
+npx expo run:ios --device <기기 UDID> --configuration Release
+# 기기 UDID 확인: xcrun devicectl list devices
+```
+
+이 프로젝트에서 걸렸던 것 세 가지:
+
+- **iOS 27**은 앱이 UIScene 생명주기를 채택하지 않으면 실행 즉시 종료시킵니다(`NoSceneLifecycleAdoption` 트랩). RN 0.87 / Expo SDK 57까지는 기본 템플릿에 Scene 지원이 없어, `plugins/withSceneDelegate.js`에서 `AppDelegate`에 `SceneDelegate`를 붙입니다. prebuild 때마다 자동 적용됩니다.
+- **폴더 이름에 한글이 있으면** macOS 기본 Ruby(2.6)가 `pod install` 중 인코딩 오류를 냅니다. 영문 경로에 복사해 빌드하면 됩니다.
+  ```bash
+  rsync -a --exclude '/ios/' --exclude '/.git/' --exclude '/.expo/' --exclude '/web-preview/' \
+    ~/Desktop/뭐먹지/ ~/Desktop/mwomeokji-build/
+  ```
+- **Ruby 2.6**에는 `Enumerable#filter_map`(2.7 도입)이 없어 Expo의 CocoaPods 스크립트가 멈춥니다. Ruby 3.x를 쓰거나, `pod install` 동안만 그 메서드를 채워 넣으면 됩니다.
+
 **설치되는 앱으로 만들기** — 스토어 없이 폰에 직접 설치하려면:
 
 ```bash
