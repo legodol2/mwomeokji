@@ -25,7 +25,12 @@ const DEFAULT = {
   budget:90000, days:5, people:1, mpd:2, seed:7,
   cart:{}, shopMode:'cart'
 };
-const TABS = [{ k:'menu', n:'메뉴' }, { k:'plan', n:'식단' }, { k:'shop', n:'장보기' }, { k:'setup', n:'설정' }];
+const TABS = [
+  { k:'menu',  n:'홈',     e:'🏠' },
+  { k:'plan',  n:'식단',   e:'🍽️' },
+  { k:'shop',  n:'장보기', e:'🛒' },
+  { k:'setup', n:'설정',   e:'⚙️' }
+];
 const TITLES = { menu:'무얼 먹을까', plan:'앱이 짠 식단', shop:'장보기', setup:'설정' };
 
 export default function App(){
@@ -157,16 +162,20 @@ export default function App(){
             const badge = x.k === 'menu' && cart.mealCount ? cart.mealCount : 0;
             return (
               <Pressable key={x.k} onPress={()=>setTab(x.k)} accessibilityRole="tab" accessibilityState={{selected:on}}
-                style={({pressed})=>({ flex:1, alignItems:'center', paddingTop:sp.m,
-                  paddingBottom: Platform.OS==='ios' ? sp.s : sp.m, opacity: pressed ? 0.6 : 1 })}>
-                <View style={{ flexDirection:'row', alignItems:'center', gap:5 }}>
-                  <Text style={{ color: on ? t.primary : t.ink3, fontSize:14, fontWeight: on ? '700' : '500' }}>{x.n}</Text>
+                style={({pressed})=>({ flex:1, alignItems:'center', paddingTop:sp.s,
+                  paddingBottom: Platform.OS==='ios' ? sp.xs : sp.s, opacity: pressed ? 0.6 : 1 })}>
+                <View>
+                  <Text style={{ fontSize:22, lineHeight:27, opacity: on ? 1 : 0.4 }}>{x.e}</Text>
                   {badge ? (
-                    <View style={{ backgroundColor:t.primary, borderRadius:999, minWidth:18, paddingHorizontal:5, paddingVertical:1.5 }}>
-                      <Text style={[num,{ color:t.onPrimary, fontSize:10.5, fontWeight:'800', textAlign:'center' }]}>{badge}</Text>
+                    <View style={{ position:'absolute', top:-2, right:-12, backgroundColor:t.primary, borderRadius:999,
+                                   minWidth:17, paddingHorizontal:4.5, paddingVertical:1.5 }}>
+                      <Text style={[num,{ color:t.onPrimary, fontSize:10, fontWeight:'800', textAlign:'center' }]}>{badge}</Text>
                     </View>
                   ) : null}
                 </View>
+                <Text style={{ color: on ? t.primary : t.ink3, fontSize:11.5, fontWeight: on ? '700' : '500', marginTop:2 }}>
+                  {x.n}
+                </Text>
               </Pressable>
             );
           })}

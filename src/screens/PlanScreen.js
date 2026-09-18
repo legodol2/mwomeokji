@@ -36,14 +36,48 @@ function Banner({ a, t }){
   );
 }
 
+/* 위쪽 날짜 줄 — 날짜마다 끼니 수만큼 점을 찍는다 */
+function DayStrip({ days, counts, value, onChange, t }){
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ gap:sp.s, paddingVertical:sp.s }}>
+      {days.map(d => {
+        const on = d === value;
+        return (
+          <Pressable key={d} onPress={()=>onChange(d)} accessibilityRole="button"
+            accessibilityLabel={`${d+1}일차`} accessibilityState={{ selected:on }}
+            style={({pressed})=>({ alignItems:'center', width:52, paddingVertical:8, borderRadius:radius.md,
+              backgroundColor: on ? t.primarySoft : 'transparent', opacity: pressed ? 0.6 : 1 })}>
+            <Text style={[num,{ color: on ? t.primary : t.ink2, fontSize:17, fontWeight: on ? '800' : '600' }]}>{d+1}</Text>
+            <Text style={{ color: on ? t.primary : t.ink3, fontSize:10.5, marginTop:1 }}>일차</Text>
+            <View style={{ flexDirection:'row', gap:3, marginTop:6, height:5 }}>
+              {Array.from({ length:counts[d] || 0 }).map((_,i)=>(
+                <View key={i} style={{ width:5, height:5, borderRadius:3,
+                                       backgroundColor: on ? t.primary : t.line2 }} />
+              ))}
+            </View>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
 export default function PlanScreen({ result, st, set, t, onFillCart }){
   const [meal, setMeal] = useState(null);
+  const [day, setDay] = useState(0);
   const { cfg, p } = result;
   const a = advice(cfg, result.list, result, result.martTotals, result.notes);
   const slots = cfg.days*cfg.mpd, servings = slots*cfg.people;
   const labels = WHEN[cfg.mpd];
   const byDay = {};
   p.meals.forEach(m => { (byDay[m.day] = byDay[m.day] || []).push(m); });
+  const dayList = Object.keys(byDay).map(Number).sort((x,y)=>x-y);
+  const mealCounts = {};
+  dayList.forEach(d => { mealCounts[d] = byDay[d].length; });
+  const shownDay = byDay[day] ? day : (dayList[0] ?? 0);   // 기간을 줄이면 없는 날짜를 가리킬 수 있다
+  const today = byDay[shownDay] || [];
+  const todayMins = today.reduce((s2,m)=>s2+m.r.t, 0);
 
   return (
     <>
@@ -57,33 +91,32 @@ export default function PlanScreen({ result, st, set, t, onFillCart }){
           <Stat t={t} k="요리" v={p.distinct} unit="가지" sub={`품목 ${p.lines.length}개`} />
         </View>
 
-        {Object.keys(byDay).map(Number).sort((x,y)=>x-y).map(d => {
-          const list = byDay[d], mins = list.reduce((s,m)=>s+m.r.t, 0);
-          return (
-            <View key={d} style={{ paddingTop:sp.xl }}>
-              <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'baseline', marginBottom:sp.xs }}>
-                <Text style={[type.subtitle,{ color:t.ink }]}>{d+1}일차</Text>
-                <Text style={[num, type.micro,{ color:t.ink3 }]}>조리 {mins}분</Text>
+        <View style={{ borderBottomWidth:0.5, borderBottomColor:t.line2 }}>
+          <DayStrip t={t} days={dayList} counts={mealCounts} value={shownDay} onChange={setDay} />
+        </View>
+
+        <View style={{ paddingTop:sp.l }}>
+          <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'baseline' }}>
+            <Text style={[type.subtitle,{ color:t.ink }]}>{shownDay+1}일차</Text>
+            <Text style={[num, type.micro,{ color:t.ink3 }]}>조리 {todayMins}분</Text>
+          </View>
+          {today.map((m,i)=>(
+            <Pressable key={i}
+              onPress={()=>setMeal({ ...m, dayLabel:`${shownDay+1}일차`, whenLabel:labels[m.mi] })}
+              style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:14,
+                borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line, opacity: pressed ? 0.5 : 1 })}>
+              <Thumb t={t} emoji={m.r.e} />
+              <View style={{ flex:1 }}>
+                <Text style={{ color:t.ink, fontSize:16, fontWeight:'500', letterSpacing:-0.2 }}>{m.r.n}</Text>
+                <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
+                  <Text style={{ color:t.ink2, fontWeight:'600' }}>{labels[m.mi]}</Text>
+                  {' · '}{m.r.t}분{m.r.sp>=2 ? ' · 매움' : ''}{minShelf(m.r)<=4 ? ' · 신선재료' : ''}
+                </Text>
               </View>
-              {list.map((m,i)=>(
-                <Pressable key={i}
-                  onPress={()=>setMeal({ ...m, dayLabel:`${d+1}일차`, whenLabel:labels[m.mi] })}
-                  style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:14,
-                    borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line, opacity: pressed ? 0.5 : 1 })}>
-                  <Thumb t={t} emoji={m.r.e} />
-                  <View style={{ flex:1 }}>
-                    <Text style={{ color:t.ink, fontSize:16, fontWeight:'500', letterSpacing:-0.2 }}>{m.r.n}</Text>
-                    <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
-                      <Text style={{ color:t.ink2, fontWeight:'600' }}>{labels[m.mi]}</Text>
-                      {' · '}{m.r.t}분{m.r.sp>=2 ? ' · 매움' : ''}{minShelf(m.r)<=4 ? ' · 신선재료' : ''}
-                    </Text>
-                  </View>
-                  <Text style={{ color:t.ink3, fontSize:18, lineHeight:20 }}>›</Text>
-                </Pressable>
-              ))}
-            </View>
-          );
-        })}
+              <Text style={{ color:t.ink3, fontSize:18, lineHeight:20 }}>›</Text>
+            </Pressable>
+          ))}
+        </View>
 
         <View style={{ gap:sp.s, marginTop:sp.xxl }}>
           <PrimaryButton t={t} label={`이 ${slots}끼 그대로 담기`} onPress={onFillCart} />
