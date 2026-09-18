@@ -6,8 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { MART } from './src/data';
 import { resolveRegion, candidates, plan, cheapPlanFor, cartBill, ownedFrom, won } from './src/engine';
-import { useTheme, mono } from './src/theme';
-import { Bar } from './src/ui';
+import { useTheme, sp, type, num } from './src/theme';
+import { PrimaryButton, EmptyState } from './src/ui';
 import Onboarding from './src/screens/Onboarding';
 import MenuScreen from './src/screens/MenuScreen';
 import PlanScreen from './src/screens/PlanScreen';
@@ -26,6 +26,7 @@ const DEFAULT = {
   cart:{}, shopMode:'cart'
 };
 const TABS = [{ k:'menu', n:'메뉴' }, { k:'plan', n:'식단' }, { k:'shop', n:'장보기' }, { k:'setup', n:'설정' }];
+const TITLES = { menu:'무얼 먹을까', plan:'앱이 짠 식단', shop:'장보기', setup:'설정' };
 
 export default function App(){
   const t = useTheme();
@@ -113,46 +114,12 @@ export default function App(){
       <StatusBar style={t.dark ? 'light' : 'dark'} />
       <SafeAreaView style={{ flex:1 }} edges={['top','left','right','bottom']}>
 
-        <View style={{ paddingHorizontal:18, paddingTop:10, paddingBottom:12, borderBottomWidth:1, borderColor:t.line }}>
-          <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'baseline' }}>
-            <Text style={{ color:t.ink, fontSize:19, fontWeight:'800', letterSpacing:-0.3 }}>뭐먹지</Text>
-            <Text style={{ color:t.ink3, fontSize:12 }} numberOfLines={1}>
-              {result.cfg.reg.n} · {MART[result.cfg.mart].n} · {st.days}일 × {st.mpd}끼 · {st.people}명
-            </Text>
-          </View>
-          {bill && bill.total > 0 ? (
-            <>
-              <View style={{ flexDirection:'row', alignItems:'baseline', gap:8, marginTop:6 }}>
-                <Text style={[mono,{ color:t.warm, fontSize:27, fontWeight:'800' }]}>{won(bill.total)}</Text>
-                <Text style={{ color:t.ink2, fontSize:13 }}>원</Text>
-                <Text style={{ color:t.ink3, fontSize:11.5 }}>
-                  {st.shopMode === 'cart' ? `담은 ${bill.mealCount}끼` : '앱이 짠 식단'}
-                </Text>
-                <View style={{ flex:1 }} />
-                <Text style={[mono,{ color: over ? t.danger : t.accent, fontSize:13 }]}>
-                  {over ? '−' : ''}{won(Math.abs(rest))}원 {over ? '모자람' : '남음'}
-                </Text>
-              </View>
-              <View style={{ marginTop:8 }}>
-                <Bar t={t} pct={bill.total/Math.max(st.budget,1)*100} over={over} />
-              </View>
-            </>
-          ) : bill ? (
-            <>
-              <View style={{ flexDirection:'row', alignItems:'baseline', gap:8, marginTop:6 }}>
-                <Text style={[mono,{ color:t.ink, fontSize:27, fontWeight:'800' }]}>{won(st.budget)}</Text>
-                <Text style={{ color:t.ink2, fontSize:13 }}>원</Text>
-                <Text style={{ color:t.ink3, fontSize:11.5 }}>예산</Text>
-                <View style={{ flex:1 }} />
-                <Text style={{ color:t.ink3, fontSize:12 }}>메뉴를 담으면 합계가 나옵니다</Text>
-              </View>
-              <View style={{ marginTop:8 }}>
-                <Bar t={t} pct={0} />
-              </View>
-            </>
-          ) : (
-            <Text style={{ color:t.ink2, fontSize:13, marginTop:8 }}>조건에 맞는 요리가 없습니다</Text>
-          )}
+        <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.m, paddingBottom:sp.s }}>
+          <Text style={[type.title,{ color:t.ink }]}>{TITLES[tab]}</Text>
+          <Text style={[type.caption,{ color:t.ink3, marginTop:2 }]} numberOfLines={1}>
+            {result.cfg.reg.n} · {MART[result.cfg.mart].n} · {st.days}일 × {st.mpd}끼 · {st.people}명
+            {bill && bill.total > 0 ? `  ·  ${won(bill.total)}원` : ''}
+          </Text>
         </View>
 
         <View style={{ flex:1 }}>
@@ -161,17 +128,11 @@ export default function App(){
               bill={cart} t={t} onGoShop={()=>{ setSt(s=>({...s, shopMode:'cart'})); setTab('shop'); }} />
           ) : tab === 'plan' ? (
             result.empty ? (
-              <View style={{ flex:1, padding:26, justifyContent:'center' }}>
-                <Text style={{ color:t.ink, fontSize:17, fontWeight:'700', textAlign:'center' }}>짤 수 있는 식단이 없습니다</Text>
-                <Text style={{ color:t.ink2, fontSize:14, textAlign:'center', marginTop:8, lineHeight:21 }}>
-                  조리도구를 하나도 안 골랐거나 조건이 너무 좁습니다.{'\n'}냄비나 프라이팬 중 하나는 체크해 주세요.
-                </Text>
-                <Pressable onPress={()=>setTab('setup')}
-                  style={{ marginTop:20, alignSelf:'center', paddingHorizontal:22, paddingVertical:12,
-                           borderRadius:11, backgroundColor:t.accent }}>
-                  <Text style={{ color:t.onAccent, fontSize:15, fontWeight:'700' }}>설정 고치기</Text>
-                </Pressable>
-              </View>
+              <EmptyState t={t}
+                title="짤 수 있는 식단이 없습니다"
+                body={'조리도구를 하나도 안 골랐거나 조건이 너무 좁습니다.\n냄비나 프라이팬 중 하나는 체크해 주세요.'}
+                action={<PrimaryButton t={t} label="설정 고치기" onPress={()=>setTab('setup')} />} />
+
             ) : (
               <PlanScreen result={result} st={st} set={setSt} t={t} onFillCart={fillCartFromPlan} />
             )
@@ -190,19 +151,19 @@ export default function App(){
           )}
         </View>
 
-        <View style={{ flexDirection:'row', borderTopWidth:1, borderColor:t.line, backgroundColor:t.card }}>
+        <View style={{ flexDirection:'row', borderTopWidth:0.5, borderTopColor:t.line2, backgroundColor:t.bg }}>
           {TABS.map(x => {
             const on = tab === x.k;
             const badge = x.k === 'menu' && cart.mealCount ? cart.mealCount : 0;
             return (
               <Pressable key={x.k} onPress={()=>setTab(x.k)} accessibilityRole="tab" accessibilityState={{selected:on}}
-                style={{ flex:1, alignItems:'center', paddingTop:11, paddingBottom:Platform.OS==='ios'?6:11 }}>
-                <View style={{ height:3, width:26, borderRadius:2, backgroundColor: on ? t.accent : 'transparent', marginBottom:7 }} />
-                <View style={{ flexDirection:'row', alignItems:'center', gap:4 }}>
-                  <Text style={{ color: on ? t.ink : t.ink3, fontSize:13.5, fontWeight: on ? '700' : '400' }}>{x.n}</Text>
+                style={({pressed})=>({ flex:1, alignItems:'center', paddingTop:sp.m,
+                  paddingBottom: Platform.OS==='ios' ? sp.s : sp.m, opacity: pressed ? 0.6 : 1 })}>
+                <View style={{ flexDirection:'row', alignItems:'center', gap:5 }}>
+                  <Text style={{ color: on ? t.primary : t.ink3, fontSize:14, fontWeight: on ? '700' : '500' }}>{x.n}</Text>
                   {badge ? (
-                    <View style={{ backgroundColor:t.accent, borderRadius:999, minWidth:17, paddingHorizontal:5, paddingVertical:1 }}>
-                      <Text style={[mono,{ color:t.onAccent, fontSize:10, fontWeight:'700', textAlign:'center' }]}>{badge}</Text>
+                    <View style={{ backgroundColor:t.primary, borderRadius:999, minWidth:18, paddingHorizontal:5, paddingVertical:1.5 }}>
+                      <Text style={[num,{ color:t.onPrimary, fontSize:10.5, fontWeight:'800', textAlign:'center' }]}>{badge}</Text>
                     </View>
                   ) : null}
                 </View>
@@ -210,6 +171,7 @@ export default function App(){
             );
           })}
         </View>
+
       </SafeAreaView>
 
       <Modal visible={mapOpen} animationType="slide" onRequestClose={()=>setMapOpen(false)}>

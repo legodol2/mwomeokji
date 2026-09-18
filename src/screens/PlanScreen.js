@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
-import { ING } from '../data';
-import { won, qty, toolNames, minShelf, WHEN } from '../engine';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { won, minShelf, WHEN } from '../engine';
 import { advice } from '../advice';
-import { Card, Label, Bar } from '../ui';
 import RecipeSheet from '../RecipeSheet';
-import { mono } from '../theme';
+import { Label, PrimaryButton, TextButton } from '../ui';
+import { sp, radius, type, num } from '../theme';
 
 function Stat({ t, k, v, unit, sub }){
   return (
     <View style={{ flex:1 }}>
-      <Text style={{ color:t.ink3, fontSize:11, letterSpacing:0.6 }}>{k}</Text>
-      <Text style={[mono,{ color:t.ink, fontSize:19, fontWeight:'700', marginTop:3 }]}>
-        {v}<Text style={{ fontSize:12, fontWeight:'400', color:t.ink2 }}>{unit}</Text>
+      <Text style={[type.micro,{ color:t.ink3 }]}>{k}</Text>
+      <Text style={[num,{ color:t.ink, fontSize:20, fontWeight:'800', marginTop:4, letterSpacing:-0.4 }]}>
+        {v}<Text style={{ fontSize:13, fontWeight:'500', color:t.ink2 }}>{unit}</Text>
       </Text>
-      {sub ? <Text style={{ color:t.ink3, fontSize:11, marginTop:1 }}>{sub}</Text> : null}
+      {sub ? <Text style={[type.micro,{ color:t.ink3, marginTop:2 }]}>{sub}</Text> : null}
     </View>
   );
 }
@@ -22,16 +21,15 @@ function Stat({ t, k, v, unit, sub }){
 function Banner({ a, t }){
   if(!a) return null;
   const over = a.kind === 'over';
-  const bg = over ? t.dangerSoft : t.accentSoft;
-  const fg = over ? t.danger : t.accent;
   return (
-    <View style={{ backgroundColor:bg, borderRadius:12, borderWidth:1, borderColor:fg, padding:14, marginBottom:14 }}>
-      <Text style={{ color:fg, fontSize:15.5, fontWeight:'700' }}>{a.title}</Text>
-      {a.body ? <Text style={{ color:t.ink2, fontSize:13, marginTop:4, lineHeight:19 }}>{a.body}</Text> : null}
+    <View style={{ backgroundColor: over ? t.dangerSoft : t.primarySoft, borderRadius:radius.lg,
+                   padding:sp.l, marginBottom:sp.l }}>
+      <Text style={[type.subtitle,{ color: over ? t.danger : t.ink }]}>{a.title}</Text>
+      {a.body ? <Text style={[type.caption,{ color:t.ink2, marginTop:4, lineHeight:20 }]}>{a.body}</Text> : null}
       {a.lines.map((l,i)=>(
-        <View key={i} style={{ flexDirection:'row', marginTop:7 }}>
-          <Text style={{ color:t.ink3, fontSize:13, width:14 }}>·</Text>
-          <Text style={{ color:t.ink2, fontSize:13, flex:1, lineHeight:19 }}>{l}</Text>
+        <View key={i} style={{ flexDirection:'row', marginTop:8, gap:6 }}>
+          <Text style={[type.caption,{ color:t.ink3 }]}>·</Text>
+          <Text style={[type.caption,{ color:t.ink2, flex:1, lineHeight:20 }]}>{l}</Text>
         </View>
       ))}
     </View>
@@ -49,62 +47,50 @@ export default function PlanScreen({ result, st, set, t, onFillCart }){
 
   return (
     <>
-      <ScrollView style={{ flex:1 }} contentContainerStyle={{ padding:18, paddingBottom:40 }}>
+      <ScrollView style={{ flex:1 }} contentContainerStyle={{ paddingHorizontal:sp.xl, paddingTop:sp.xl, paddingBottom:sp.xxxl }}>
         <Banner a={a} t={t} />
 
-        <Card t={t} style={{ marginBottom:16 }}>
-          <View style={{ flexDirection:'row', gap:12 }}>
-            <Stat t={t} k="한 끼 단가" v={won(p.total/servings)} unit="원" sub={`${cfg.people}명 × ${slots}끼`} />
-            <Stat t={t} k="하루 식비" v={won(p.total/cfg.days)} unit="원" sub={`${cfg.days}일 / 하루 ${cfg.mpd}끼`} />
-            <Stat t={t} k="요리" v={p.distinct} unit="가지" sub={`품목 ${p.lines.length}개`} />
-          </View>
-        </Card>
+        <View style={{ flexDirection:'row', gap:sp.m, paddingBottom:sp.l,
+                       borderBottomWidth:0.5, borderBottomColor:t.line2 }}>
+          <Stat t={t} k="한 끼 단가" v={won(p.total/servings)} unit="원" sub={`${cfg.people}명 × ${slots}끼`} />
+          <Stat t={t} k="하루 식비" v={won(p.total/cfg.days)} unit="원" sub={`하루 ${cfg.mpd}끼`} />
+          <Stat t={t} k="요리" v={p.distinct} unit="가지" sub={`품목 ${p.lines.length}개`} />
+        </View>
 
         {Object.keys(byDay).map(Number).sort((x,y)=>x-y).map(d => {
           const list = byDay[d], mins = list.reduce((s,m)=>s+m.r.t, 0);
           return (
-            <View key={d} style={{ backgroundColor:t.card, borderWidth:1, borderColor:t.line, borderRadius:12,
-                                   marginBottom:11, overflow:'hidden' }}>
-              <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'baseline',
-                             paddingHorizontal:15, paddingVertical:10, backgroundColor:t.sunk,
-                             borderBottomWidth:1, borderColor:t.line }}>
-                <Text style={{ color:t.ink, fontSize:15.5, fontWeight:'700' }}>{d+1}일차</Text>
-                <Text style={[mono,{ color:t.ink3, fontSize:12 }]}>조리 {mins}분</Text>
+            <View key={d} style={{ paddingTop:sp.xl }}>
+              <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'baseline', marginBottom:sp.xs }}>
+                <Text style={[type.subtitle,{ color:t.ink }]}>{d+1}일차</Text>
+                <Text style={[num, type.micro,{ color:t.ink3 }]}>조리 {mins}분</Text>
               </View>
               {list.map((m,i)=>(
                 <Pressable key={i}
                   onPress={()=>setMeal({ ...m, dayLabel:`${d+1}일차`, whenLabel:labels[m.mi] })}
-                  style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:12,
-                    paddingHorizontal:15, paddingVertical:12,
-                    borderTopWidth: i?1:0, borderColor:t.line,
-                    backgroundColor: pressed ? t.sunk : 'transparent' })}>
-                  <Text style={{ color:t.ink3, fontSize:11.5, width:30 }}>{labels[m.mi]}</Text>
+                  style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:14,
+                    borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line, opacity: pressed ? 0.5 : 1 })}>
+                  <Text style={[type.micro,{ color:t.ink3, width:32, fontWeight:'700' }]}>{labels[m.mi]}</Text>
                   <View style={{ flex:1 }}>
-                    <Text style={{ color:t.ink, fontSize:15, fontWeight:'500' }}>{m.r.n}</Text>
-                    <Text style={{ color:t.ink3, fontSize:11.5, marginTop:1 }}>
-                      {m.r.c}{m.r.sp>=2 ? ' · 매움' : ''}{minShelf(m.r)<=4 ? ' · 신선재료' : ''}
+                    <Text style={{ color:t.ink, fontSize:16, fontWeight:'500', letterSpacing:-0.2 }}>{m.r.n}</Text>
+                    <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
+                      {m.r.c} · {m.r.t}분{m.r.sp>=2 ? ' · 매움' : ''}{minShelf(m.r)<=4 ? ' · 신선재료' : ''}
                     </Text>
                   </View>
-                  <Text style={[mono,{ color:t.ink3, fontSize:12 }]}>{m.r.t}분</Text>
-                  <Text style={{ color:t.line2, fontSize:16 }}>›</Text>
+                  <Text style={{ color:t.ink3, fontSize:18, lineHeight:20 }}>›</Text>
                 </Pressable>
               ))}
             </View>
           );
         })}
 
-        <Pressable onPress={onFillCart}
-          style={({pressed})=>({ marginTop:6, paddingVertical:13, borderRadius:11, backgroundColor:t.accent,
-                                 alignItems:'center', opacity:pressed?0.8:1 })}>
-          <Text style={{ color:t.onAccent, fontSize:15, fontWeight:'700' }}>이 {slots}끼 그대로 담기</Text>
-        </Pressable>
-
-        <Pressable onPress={()=>set(s=>({ ...s, seed:(s.seed*1664525+1013904223)%4294967296 }))}
-          style={({pressed})=>({ marginTop:6, paddingVertical:13, borderRadius:11, borderWidth:1,
-                                 borderColor:t.line2, alignItems:'center', opacity:pressed?0.7:1 })}>
-          <Text style={{ color:t.ink2, fontSize:14.5 }}>다른 조합으로 다시 짜기</Text>
-        </Pressable>
+        <View style={{ gap:sp.s, marginTop:sp.xxl }}>
+          <PrimaryButton t={t} label={`이 ${slots}끼 그대로 담기`} onPress={onFillCart} />
+          <TextButton t={t} label="다른 조합으로 다시 짜기"
+            onPress={()=>set(s=>({ ...s, seed:(s.seed*1664525+1013904223)%4294967296 }))} />
+        </View>
       </ScrollView>
+
       <RecipeSheet recipe={meal?.r} people={cfg.people} t={t} onClose={()=>setMeal(null)}
         caption={meal ? `${meal.dayLabel} · ${meal.whenLabel}` : ''} />
     </>
