@@ -53,7 +53,7 @@ Play 스토어/앱 스토어 제출은 `npx eas build --profile production` → 
 
 ```
 App.js                  탭·헤더·상태·저장·온보딩 분기
-src/data.js             재료 시세표(60여 종), 레시피(41가지), 마트·지역표
+src/data.js             재료 시세표(60여 종), 레시피(41가지, 이모지 포함), 마트·지역표
 src/engine.js           식단 조합 엔진 (DOM/RN 의존 없는 순수 JS)
 src/advice.js           예산 판정, 남는 재료, 보관 팁
 src/theme.js  src/ui.js 색·타이포, 공용 컴포넌트
@@ -89,6 +89,10 @@ web-preview/            같은 엔진의 웹 버전 (참고용)
   > 3. `app.json`을 `app.config.js`로 바꿔 `process.env.GOOGLE_MAPS_ANDROID_KEY`를 읽게 하고, 키 자체는 절대 커밋하지 않습니다.
   >
   > 실수로 커밋했다면 파일에서 지우는 것만으로는 부족합니다. **Google 콘솔에서 그 키를 폐기하고 새로 발급**해야 합니다.
+
+## 메뉴 그림
+
+메뉴 옆 그림은 **이모지**입니다. 글자로 저장되고 기기 글꼴(iOS는 Apple Color Emoji, Android는 Noto Color Emoji)이 그리므로, 앱에 담기는 이미지 파일이 없고 저작권·라이선스 문제가 없습니다. 네트워크도 타지 않아 오프라인에서도 보입니다. 바꾸려면 `src/data.js`의 레시피에서 `e:` 값만 고치면 됩니다.
 
 ## 가격에 대해
 

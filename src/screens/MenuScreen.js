@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { R, CUISINES } from '../data';
 import { won, addCost, hasTools, dietOK, toolNames } from '../engine';
 import RecipeSheet from '../RecipeSheet';
-import { Chip, Seg, Bar, Label, PrimaryButton } from '../ui';
+import { Chip, Seg, Bar, Label, PrimaryButton, Thumb } from '../ui';
 import { sp, radius, type, num } from '../theme';
 
 const SORTS = [{ v:'cost', n:'싼 순' }, { v:'time', n:'빠른 순' }, { v:'cuisine', n:'종류순' }];
@@ -96,11 +96,15 @@ export default function MenuScreen({ cfg, st, set, cart, setCart, bill, t, onGoS
               <View key={r.id}
                 style={{ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:14,
                          borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line }}>
-                <Pressable onPress={()=>setSheet(r)} style={({pressed})=>({ flex:1, opacity:pressed?0.5:1 })} accessibilityRole="button">
+                <Pressable onPress={()=>setSheet(r)} accessibilityRole="button"
+                  style={({pressed})=>({ flex:1, flexDirection:'row', alignItems:'center', gap:sp.m, opacity:pressed?0.5:1 })}>
+                  <Thumb t={t} emoji={r.e} tone={n ? 'soft' : undefined} />
+                  <View style={{ flex:1 }}>
                   <Text style={{ color:t.ink, fontSize:16, fontWeight: n ? '700' : '500', letterSpacing:-0.2 }}>{r.n}</Text>
                   <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
                     {r.c} · {r.t}분{r.sp>=2 ? ' · 매움' : ''}{ok ? '' : ' · 도구 부족'}
                   </Text>
+                  </View>
                 </Pressable>
                 <Text style={[num,{ color: add ? t.ink2 : t.primary, fontSize:14.5, fontWeight:'600' }]}>
                   {add ? '+'+won(add) : '+0'}

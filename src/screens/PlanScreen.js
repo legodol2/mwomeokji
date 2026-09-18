@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { won, minShelf, WHEN } from '../engine';
 import { advice } from '../advice';
 import RecipeSheet from '../RecipeSheet';
-import { Label, PrimaryButton, TextButton } from '../ui';
+import { Label, PrimaryButton, TextButton, Thumb } from '../ui';
 import { sp, radius, type, num } from '../theme';
 
 function Stat({ t, k, v, unit, sub }){
@@ -70,11 +70,12 @@ export default function PlanScreen({ result, st, set, t, onFillCart }){
                   onPress={()=>setMeal({ ...m, dayLabel:`${d+1}일차`, whenLabel:labels[m.mi] })}
                   style={({pressed})=>({ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:14,
                     borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line, opacity: pressed ? 0.5 : 1 })}>
-                  <Text style={[type.micro,{ color:t.ink3, width:32, fontWeight:'700' }]}>{labels[m.mi]}</Text>
+                  <Thumb t={t} emoji={m.r.e} />
                   <View style={{ flex:1 }}>
                     <Text style={{ color:t.ink, fontSize:16, fontWeight:'500', letterSpacing:-0.2 }}>{m.r.n}</Text>
                     <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
-                      {m.r.c} · {m.r.t}분{m.r.sp>=2 ? ' · 매움' : ''}{minShelf(m.r)<=4 ? ' · 신선재료' : ''}
+                      <Text style={{ color:t.ink2, fontWeight:'600' }}>{labels[m.mi]}</Text>
+                      {' · '}{m.r.t}분{m.r.sp>=2 ? ' · 매움' : ''}{minShelf(m.r)<=4 ? ' · 신선재료' : ''}
                     </Text>
                   </View>
                   <Text style={{ color:t.ink3, fontSize:18, lineHeight:20 }}>›</Text>

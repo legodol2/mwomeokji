@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
 import { ING } from './data';
 import { qty, toolNames, minShelf } from './engine';
-import { Label, TextButton } from './ui';
+import { Label, TextButton, Thumb } from './ui';
 import { sp, radius, type, num } from './theme';
 
 export default function RecipeSheet({ recipe:r, caption, people, t, onClose, footer }){
@@ -16,8 +16,11 @@ export default function RecipeSheet({ recipe:r, caption, people, t, onClose, foo
         </View>
         {r && (
           <ScrollView contentContainerStyle={{ paddingHorizontal:sp.xl, paddingTop:sp.l, paddingBottom:sp.l }}>
-            <Text style={[type.title,{ color:t.ink, fontSize:26 }]}>{r.n}</Text>
-            <Text style={[type.caption,{ color:t.ink3, marginTop:6 }]}>
+            <View style={{ flexDirection:'row', alignItems:'center', gap:sp.m }}>
+              <Thumb t={t} emoji={r.e} size={56} tone="soft" />
+              <Text style={[type.title,{ color:t.ink, fontSize:24, flex:1 }]}>{r.n}</Text>
+            </View>
+            <Text style={[type.caption,{ color:t.ink3, marginTop:sp.m }]}>
               {r.c} · 조리 {r.t}분{r.sp>=2 ? ' · 매움' : ''}{minShelf(r)<=4 ? ' · 신선재료 먼저' : ''}
             </Text>
             {caption ? <Text style={[type.caption,{ color:t.ink3, marginTop:2 }]}>{caption}</Text> : null}

@@ -57,6 +57,16 @@ export function Chip({ label, on, onPress, t, small, tone }){
   );
 }
 
+/* 메뉴 이름 옆 그림 — 기기 글꼴이 그리는 이모지라 앱에 담는 이미지가 없다 */
+export function Thumb({ t, emoji, size = 44, tone }){
+  return (
+    <View style={{ width:size, height:size, borderRadius:size/3, alignItems:'center', justifyContent:'center',
+                   backgroundColor: tone === 'soft' ? t.primarySoft : t.surface }}>
+      <Text style={{ fontSize:size*0.5, lineHeight:size*0.64 }}>{emoji}</Text>
+    </View>
+  );
+}
+
 /* 목록에서 한 줄만 짚어 줄 때 */
 export function Badge({ t, label }){
   return (
