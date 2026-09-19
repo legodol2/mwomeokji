@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, Pressable, Platform, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, Pressable, Platform, ActivityIndicator, Modal, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -165,7 +165,16 @@ export default function App(){
           ) : (
             <Setup st={st} set={setSt} result={result} t={t}
               onOpenMap={()=>setMapOpen(true)}
-              onRestart={()=>setSt(s=>({ ...s, onboarded:false }))} />
+              onRestart={()=>Alert.alert(
+                '처음부터 다시 할까요?',
+                '담은 메뉴와 장보기 체크, 지금까지의 설정이 모두 지워지고 첫 설정 화면부터 다시 시작합니다.',
+                [{ text:'취소', style:'cancel' },
+                 { text:'다시 시작', style:'destructive', onPress:()=>{
+                     setSt({ ...DEFAULT });          // 담은 메뉴까지 전부 초기화
+                     setChecked({ sig:'', map:{} });
+                     setTab('menu');
+                   } }]
+              )} />
           )}
         </View>
 
