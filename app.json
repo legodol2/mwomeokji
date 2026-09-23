@@ -21,9 +21,11 @@
               }
             ]
           }
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       },
-      "appleTeamId": "7ZK5H7LL83"
+      "appleTeamId": "7ZK5H7LL83",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,7 +43,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "primaryColor": "#1E6B4A",
+    "primaryColor": "#FB6545",
     "plugins": [
       [
         "expo-location",
