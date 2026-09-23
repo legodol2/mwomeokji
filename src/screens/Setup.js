@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TextInput, Pressable, LayoutAnimation, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { TOOLS, PANTRY, MART, R } from '../data';
+import { TOOLS, PANTRY, MART, R, TIERS, ING } from '../data';
 import { CREDITS } from '../foodPhotos';
-import { won } from '../engine';
+import { won, qty, usableStock } from '../engine';
 import { Chip, Seg, Stepper, Label, TextButton, Badge } from '../ui';
 import { sp, radius, type, num } from '../theme';
 
@@ -56,6 +56,14 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
     backgroundColor:t.surface, borderRadius:radius.md, paddingHorizontal:sp.l, paddingVertical:14,
     color:t.ink, fontSize:16
   };
+
+  const stockList = Object.keys(st.stock || {})
+    .filter(id => ING[id] && (st.stock[id]?.q || 0) > 0)
+    .map(id => {
+      const passed = (Date.now() - (st.stock[id].at || 0)) / 86400000;
+      return { id, q: st.stock[id].q, days: Math.max(0, Math.ceil((ING[id].s || 365) - passed)) };
+    })
+    .sort((a,b) => a.days - b.days);
 
   const marts = result.cfg.reg.m;
   const picked = st.marts.filter(k => marts.includes(k));
@@ -160,6 +168,36 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
         <View style={{ flexDirection:'row', flexWrap:'wrap', gap:sp.s }}>
           {PANTRY.map(p => <Chip key={p.id} t={t} label={p.n} on={st.pantry.includes(p.id)} onPress={()=>tog('pantry', p.id)} />)}
         </View>
+      </Section>
+
+      <Section id="stock" title="집에 남은 재료"
+        summary={`${stockList.length}가지`}
+        hint="장보기 화면에서 ‘장 봤어요’를 누르면 쓰고 남는 양이 여기 쌓입니다. 다음에 식단을 짤 때 이 재료부터 쓰고, 모자란 만큼만 장보기 목록에 올립니다.">
+        {stockList.length ? (
+          <>
+            {stockList.map((x,i)=>(
+              <View key={x.id} style={{ flexDirection:'row', alignItems:'center', gap:sp.m, paddingVertical:11,
+                                        borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line }}>
+                <View style={{ flex:1 }}>
+                  <Text style={[type.body,{ color:t.ink }]}>{ING[x.id].n}</Text>
+                  <Text style={[type.micro,{ color: x.days <= 1 ? t.danger : t.ink3, marginTop:2 }]}>
+                    {x.days <= 0 ? '보관 기간이 지나 계산에서 뺍니다' : `보관 가능 ${x.days}일 남음`}
+                  </Text>
+                </View>
+                <Text style={[num, type.body,{ color:t.ink2 }]}>{qty(x.id, x.q)}</Text>
+                <Pressable onPress={()=>set(s2=>{ const n={...(s2.stock||{})}; delete n[x.id]; return {...s2, stock:n}; })}
+                  hitSlop={8} accessibilityLabel={`${ING[x.id].n} 지우기`}
+                  style={({pressed})=>({ opacity:pressed?0.5:1 })}>
+                  <Ionicons name="close" size={18} color={t.ink3} />
+                </Pressable>
+              </View>
+            ))}
+            <TextButton t={t} label="남은 재료 전부 비우기" onPress={()=>set(s2=>({ ...s2, stock:{} }))}
+              style={{ marginTop:sp.m }} />
+          </>
+        ) : (
+          <Text style={[type.body,{ color:t.ink3 }]}>아직 저장된 재료가 없습니다.</Text>
+        )}
       </Section>
 
       <Section id="notify" title="알림"

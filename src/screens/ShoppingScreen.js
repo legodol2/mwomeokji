@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { ING, AISLES, MART } from '../data';
+import { ING, AISLES, MART, TIERS } from '../data';
 import { won, qty } from '../engine';
 import { leftovers, storageTips } from '../advice';
 import { Label, Bar, Seg, PrimaryButton, TextButton, EmptyState } from '../ui';
@@ -17,8 +17,10 @@ function Check({ on, t }){
   );
 }
 
-export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, hasPlan, checked, toggle, reset, t, onGoPick }){
-  const got = bill ? bill.lines.filter(l => checked[l.id]).reduce((s,l)=>s+l.cost, 0) : 0;
+export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, hasPlan, checked, toggle, reset, t, onGoPick, onFinish }){
+  const buyLines = bill ? bill.lines.filter(l => l.packs > 0) : [];
+  const covered  = bill ? bill.lines.filter(l => l.packs === 0) : [];
+  const got = buyLines.filter(l => checked[l.id]).reduce((s,l)=>s+l.cost, 0);
   const left = bill ? cfg.budget - bill.total : cfg.budget;
   const owned = [...cfg.owned].filter(id => ING[id]).map(id => ING[id].n);
 
@@ -55,7 +57,7 @@ export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, ha
 
         <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.xl, paddingBottom:sp.l }}>
           <Text style={[type.caption,{ color:t.ink3 }]}>
-            {MART[cfg.mart].n} · {mode==='cart' ? `담은 메뉴 ${bill.mealCount}끼` : `${cfg.days}일 / ${cfg.people}명`} · 품목 {bill.lines.length}개
+            {MART[cfg.mart].n} · {(TIERS.find(x=>x.v===cfg.tier) || TIERS[1]).n} 가격대 · {mode==='cart' ? `담은 메뉴 ${bill.mealCount}끼` : `${cfg.days}일 / ${cfg.people}명`} · 품목 {buyLines.length}개
           </Text>
           <View style={{ flexDirection:'row', alignItems:'baseline', gap:sp.s, marginTop:6 }}>
             <Text style={[num, type.display, { color:t.ink }]}>{won(got)}</Text>
@@ -74,7 +76,7 @@ export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, ha
         )}
 
         {AISLES.map(a => {
-          const rows = bill.lines.filter(l => ING[l.id].a === a);
+          const rows = buyLines.filter(l => ING[l.id].a === a);
           if(!rows.length) return null;
           return (
             <View key={a} style={{ marginBottom:sp.s }}>
@@ -94,6 +96,7 @@ export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, ha
                         </Text>
                         <Text style={[type.caption,{ color:t.ink3, marginTop:3 }]}>
                           {g.pl} 단위 · 쓰는 양 {qty(l.id, l.need)}
+                          {l.have > 0 ? ` · 집에 ${qty(l.id, l.have)} 있어 빼고 계산` : ''}
                           {l.left > g.pq*0.35 ? ` · ${qty(l.id, l.left)} 남음` : ''}
                         </Text>
                       </View>
@@ -105,6 +108,21 @@ export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, ha
             </View>
           );
         })}
+
+        {covered.length > 0 && (
+          <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.l }}>
+            <Label t={t} style={{ marginBottom:sp.s }}>집에 있는 걸로 충분해서 안 사도 되는 것</Label>
+            {covered.map((l,i)=>(
+              <View key={l.id} style={{ flexDirection:'row', justifyContent:'space-between', paddingVertical:9,
+                                        borderTopWidth: i ? 0.5 : 0, borderTopColor:t.line }}>
+                <Text style={[type.body,{ color:t.ink2 }]}>{ING[l.id].n}</Text>
+                <Text style={[num, type.caption,{ color:t.ink3 }]}>
+                  {qty(l.id, l.need)} 필요 · 집에 {qty(l.id, l.have)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.xl }}>
           <View style={{ backgroundColor:t.surface, borderRadius:radius.lg, padding:sp.l, gap:sp.s }}>
@@ -130,6 +148,10 @@ export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, ha
               </Text>
             ) : null}
           </View>
+          <PrimaryButton t={t} label="장 봤어요 · 남은 재료 저장" onPress={onFinish} style={{ marginTop:sp.m }} />
+          <Text style={[type.micro,{ color:t.ink3, marginTop:sp.s, lineHeight:17, textAlign:'center' }]}>
+            이번에 쓰고 남는 양을 저장해 다음 장보기에서 빼 드립니다
+          </Text>
           <TextButton t={t} label="체크 전부 지우기" onPress={reset} style={{ marginTop:sp.m }} />
         </View>
 

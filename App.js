@@ -26,7 +26,10 @@ const DEFAULT = {
   pantry:['p0','p1','p2'],
   cuisines:[], spice:2, diet:'none',
   budget:90000, days:5, people:1, mpd:2, seed:7,
-  cart:{}, shopMode:'cart'
+  cart:{}, shopMode:'cart',
+  notify:false, notifyHour:9,
+  tier:'mid',            // 장바구니 가격대 (기본: 중간)
+  stock:{}               // 지난 장보기에서 남은 재료 { 재료id: {q, at} }
 };
 const TABS = [
   { k:'menu',  n:'홈',     i:'home' },
@@ -60,7 +63,7 @@ export default function App(){
     const usable = pool.length ? pool : reg.m;
     const base = {
       reg, mart:usable[0], budget:st.budget, days:st.days, people:st.people, mpd:st.mpd,
-      spice:st.spice, diet:st.diet, seed:st.seed,
+      spice:st.spice, diet:st.diet, seed:st.seed, tier:st.tier, stock:st.stock,
       tools:new Set(st.tools), cuisines:new Set(st.cuisines), owned:ownedFrom(new Set(st.pantry))
     };
     const { list, notes } = candidates(base);
@@ -72,7 +75,7 @@ export default function App(){
     for(const k of usable) if(martTotals[k] < martTotals[mart]) mart = k;
     const cfg = { ...base, mart };
     return { cfg, list, notes, martTotals, usable, ...plan(cfg, list) };
-  }, [st.region, st.marts, st.budget, st.days, st.people, st.mpd, st.spice, st.diet, st.seed, st.tools, st.cuisines, st.pantry]);
+  }, [st.region, st.marts, st.budget, st.days, st.people, st.mpd, st.spice, st.diet, st.seed, st.tier, st.tools, st.cuisines, st.pantry, st.stock]);
 
   const cart = useMemo(()=> cartBill(st.cart, result.cfg), [st.cart, result.cfg]);
   const bill = st.shopMode === 'cart' ? cart : (result.empty ? null : result.p);
@@ -89,6 +92,22 @@ export default function App(){
 
   const sig = bill ? st.shopMode + '|' + result.cfg.mart + '|' + bill.lines.map(l=>l.id+':'+l.packs).join(',') : '';
   useEffect(()=>{ setChecked(c => c.sig === sig ? c : { sig, map:{} }); }, [sig]);
+
+  /* 장을 다 봤을 때: 이번에 쓰고 남는 양을 다음 장보기로 넘긴다 */
+  const finishShopping = () => {
+    if(!bill || !bill.lines.length) return;
+    const now = Date.now();
+    const next = { ...(st.stock || {}) };
+    bill.lines.forEach(l => {
+      const rest = Math.max(0, (l.have || 0) + l.packs*l.pq - l.need);
+      if(rest > 0.0001) next[l.id] = { q:rest, at: l.packs ? now : (st.stock?.[l.id]?.at || now) };
+      else delete next[l.id];
+    });
+    setSt(s => ({ ...s, stock: next }));
+    setChecked({ sig:'', map:{} });
+    Alert.alert('남은 재료를 저장했어요',
+      '다음에 식단을 짤 때 이 재료부터 씁니다. 설정 > 집에 남은 재료에서 확인할 수 있습니다.');
+  };
 
   const setCart = next => setSt(s => ({
     ...s, cart: typeof next === 'function' ? next(s.cart) : next, shopMode:'cart'
@@ -161,7 +180,7 @@ export default function App(){
               checked={checked.map}
               toggle={id => setChecked(c => ({ sig:c.sig, map:{ ...c.map, [id]: !c.map[id] } }))}
               reset={()=>setChecked(c => ({ sig:c.sig, map:{} }))}
-              onGoPick={()=>setTab('menu')} />
+              onGoPick={()=>setTab('menu')} onFinish={finishShopping} />
           ) : (
             <Setup st={st} set={setSt} result={result} t={t}
               onOpenMap={()=>setMapOpen(true)}
@@ -170,7 +189,7 @@ export default function App(){
                 '담은 메뉴와 장보기 체크, 지금까지의 설정이 모두 지워지고 첫 설정 화면부터 다시 시작합니다.',
                 [{ text:'취소', style:'cancel' },
                  { text:'다시 시작', style:'destructive', onPress:()=>{
-                     setSt({ ...DEFAULT });          // 담은 메뉴까지 전부 초기화
+                     setSt({ ...DEFAULT });          // 담은 메뉴와 남은 재료까지 전부 초기화
                      setChecked({ sig:'', map:{} });
                      setTab('menu');
                    } }]

@@ -1,4 +1,4 @@
-import { ING, AISLES, FRESH_AISLES, TOOLS, PANTRY, R, MART, REGIONS, PROVINCE } from './data';
+import { ING, AISLES, FRESH_AISLES, TOOLS, PANTRY, R, MART, REGIONS, PROVINCE, TIERS } from './data';
 
 const TOOLNAME = Object.fromEntries(TOOLS.map(t => [t.id, t.n]));
 export const WHEN = { 1:['저녁'], 2:['점심','저녁'], 3:['아침','점심','저녁'] };
@@ -22,12 +22,13 @@ function resolveRegion(txt){
   for(const r of REGIONS) for(const k of r.k) if(t.includes(k)) return r;
   return {k:[],n:(txt||'').trim()||'전국',m:PROVINCE,unknown:true};
 }
-function unitInfo(id,mk,reg){
+function unitInfo(id,mk,reg,tier){
   const g=ING[id], m=MART[mk];
   const mult = FRESH_AISLES.has(g.a) ? m.f : m.p;
   const island = reg.island ? 1.07 : 1;
   const bulk = m.bulk||1, bd = m.bd||1;
-  return {pq:g.pq*bulk, price:Math.round(g.p*mult*island*bulk*bd/10)*10};
+  const grade = (TIERS.find(x => x.v === tier) || TIERS.find(x => x.v === 'mid')).f;
+  return {pq:g.pq*bulk, price:Math.round(g.p*mult*island*bulk*bd*grade/10)*10};
 }
 
 function hasTools(r,tools){
@@ -115,12 +116,23 @@ function dedupeDays(meals,cfg){
     if(!moved) break;
   }
 }
+/* 지난 장보기에서 남겨 둔 양. 보관 기간이 지난 것은 없는 셈 친다 */
+export function usableStock(cfg, id){
+  const s = cfg && cfg.stock && cfg.stock[id];
+  if(!s || !s.q) return 0;
+  const days = (Date.now() - (s.at || 0)) / 86400000;
+  if(days > ((ING[id] && ING[id].s) || 365)) return 0;
+  return Math.max(0, s.q);
+}
+
 function marginal(r,basket,cfg,priceFn){
   let c=0;
   for(const [id,q] of Object.entries(r.ing)){
     if(cfg.owned.has(id)) continue;
     const cur=basket[id]||0, need=q*cfg.people, {pq,price}=priceFn(id);
-    c += (Math.ceil((cur+need)/pq-1e-9)-Math.ceil(cur/pq-1e-9))*price;
+    const have=usableStock(cfg,id);
+    const packs = x => Math.ceil(Math.max(0, x - have)/pq - 1e-9);
+    c += (packs(cur+need)-packs(cur))*price;
   }
   return c;
 }
@@ -128,9 +140,13 @@ function priceBasket(basket,cfg,priceFn){
   const lines=[]; let sub=0;
   for(const [id,need] of Object.entries(basket)){
     if(cfg.owned.has(id)) continue;
-    const {pq,price}=priceFn(id), packs=Math.ceil(need/pq-1e-9), cost=packs*price;
+    const {pq,price}=priceFn(id);
+    const have=usableStock(cfg,id);
+    const buy=Math.max(0, need-have);
+    const packs=Math.ceil(buy/pq-1e-9), cost=packs*price;
     sub+=cost;
-    lines.push({id,need,packs,pq,price,cost,left:packs*pq-need});
+    lines.push({id,need,have,buy,packs,pq,price,cost,
+                left:Math.max(0, have + packs*pq - need)});
   }
   lines.sort((a,b)=>AISLES.indexOf(ING[a.id].a)-AISLES.indexOf(ING[b.id].a)||b.cost-a.cost);
   const m=MART[cfg.mart];
@@ -138,7 +154,7 @@ function priceBasket(basket,cfg,priceFn){
   return {lines,sub,fee,total:sub+fee};
 }
 function plan(cfg,cands){
-  const priceFn = id => unitInfo(id,cfg.mart,cfg.reg);
+  const priceFn = id => unitInfo(id,cfg.mart,cfg.reg,cfg.tier);
   const cache={}; const pf = id => cache[id] || (cache[id]=priceFn(id));
   let feasible=null, cheapest=null;
   for(const vari of [0,1200,2600,4200]) for(const rep of [900,2600]) for(const cap of [1,2,3,5,'free']){
@@ -151,7 +167,7 @@ function plan(cfg,cands){
   return {p:feasible||cheapest, fits:!!feasible, cheapest};
 }
 function cheapPlanFor(cfg,cands,mart){
-  const c={...cfg,mart}, pf=id=>unitInfo(id,mart,cfg.reg);
+  const c={...cfg,mart}, pf=id=>unitInfo(id,mart,cfg.reg,cfg.tier);
   const cache={}; const f=id=>cache[id]||(cache[id]=pf(id));
   let best=null;
   for(const rep of [900,2200]){
@@ -178,7 +194,7 @@ export function cartBasket(cart, people){
 
 export function cartBill(cart, cfg){
   const basket = cartBasket(cart, cfg.people);
-  const bill = priceBasket(basket, cfg, id => unitInfo(id, cfg.mart, cfg.reg));
+  const bill = priceBasket(basket, cfg, id => unitInfo(id, cfg.mart, cfg.reg, cfg.tier));
   const ids = Object.keys(cart).filter(id => cart[id] > 0);
   return {
     basket, ...bill,
@@ -190,5 +206,5 @@ export function cartBill(cart, cfg){
 
 /* 이 요리를 한 끼 더 담으면 새로 사야 하는 돈 (이미 산 재료를 또 쓰면 0원) */
 export function addCost(r, basket, cfg){
-  return marginal(r, basket, cfg, id => unitInfo(id, cfg.mart, cfg.reg));
+  return marginal(r, basket, cfg, id => unitInfo(id, cfg.mart, cfg.reg, cfg.tier));
 }
