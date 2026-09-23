@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, Platform, TextInput } from 'react-native';
+import Constants from 'expo-constants';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { resolveRegion } from '../engine';
 import { MART } from '../data';
 import { PrimaryButton } from '../ui';
 import { sp, radius, type } from '../theme';
+
+/* 안드로이드 지도는 Google 지도 키가 있어야 뜬다. 키가 없으면 지도 대신 직접 입력을 보여 준다. */
+const MAP_OK = Platform.OS !== 'android'
+  || !!Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
 
 const SEOUL = { latitude:37.5665, longitude:126.9780, latitudeDelta:0.06, longitudeDelta:0.06 };
 
@@ -27,6 +32,7 @@ export default function LocationPicker({ t, firstRun, initial, onDone, onCancel 
   const [busy, setBusy] = useState(false);
   const [denied, setDenied] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [typed, setTyped] = useState('');
   const centered = useRef(false);
 
   const locate = async (animate = true) => {
@@ -69,7 +75,42 @@ export default function LocationPicker({ t, firstRun, initial, onDone, onCancel 
   }, [coord]);
 
   const reg = addr ? resolveRegion(addr) : null;
+  const typedReg = typed.trim() ? resolveRegion(typed.trim()) : null;
   const shops = reg ? reg.m.length : 0;
+
+  if(!MAP_OK){
+    return (
+      <View style={{ flex:1, backgroundColor:t.bg }}>
+        <View style={{ paddingHorizontal:sp.xl, paddingTop:sp.xl, paddingBottom:sp.l }}>
+          <Text style={[type.title,{ color:t.ink, fontSize:26, lineHeight:34 }]}>
+            {firstRun ? '어디서 장 보세요?' : '위치 다시 정하기'}
+          </Text>
+          <Text style={[type.body,{ color:t.ink3, marginTop:sp.s, lineHeight:23 }]}>
+            사는 지역을 적어 주세요. 그 지역 기준으로 장보기 가격을 계산합니다.
+          </Text>
+        </View>
+        <View style={{ paddingHorizontal:sp.xl, flex:1 }}>
+          <TextInput value={typed} onChangeText={setTyped}
+            placeholder="예: 서울 마포구, 부산 해운대구, 전주시"
+            placeholderTextColor={t.ink3} autoFocus={firstRun}
+            style={{ backgroundColor:t.surface, borderRadius:radius.md, paddingHorizontal:sp.l,
+                     paddingVertical:14, color:t.ink, fontSize:16 }} />
+          {typedReg && (
+            <Text style={[type.caption,{ color:t.ink3, marginTop:sp.m }]}>
+              {typedReg.n} 기준 · 이 지역에 흔한 매장 {typedReg.m.length}가지
+            </Text>
+          )}
+        </View>
+        <View style={{ paddingHorizontal:sp.xl, paddingBottom: Platform.OS === 'ios' ? sp.s : sp.l, gap:sp.m }}>
+          <PrimaryButton t={t} disabled={!typed.trim()} onPress={()=>onDone(typed.trim(), null)}
+            label={typed.trim() ? `${typed.trim()}에서 장보기` : '지역을 적어 주세요'} />
+          <Pressable onPress={onCancel} style={({pressed})=>({ paddingVertical:sp.m, alignItems:'center', opacity:pressed?0.6:1 })}>
+            <Text style={[type.caption,{ color:t.ink3 }]}>{firstRun ? '나중에 정할게요' : '취소'}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex:1, backgroundColor:t.bg }}>

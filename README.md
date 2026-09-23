@@ -114,6 +114,18 @@ web-preview/            같은 엔진의 웹 버전 (참고용)
 
 메뉴 옆 그림은 **이모지**입니다. 글자로 저장되고 기기 글꼴(iOS는 Apple Color Emoji, Android는 Noto Color Emoji)이 그리므로, 앱에 담기는 이미지 파일이 없고 저작권·라이선스 문제가 없습니다. 네트워크도 타지 않아 오프라인에서도 보입니다. 바꾸려면 `src/data.js`의 레시피에서 `e:` 값만 고치면 됩니다.
 
+## 안드로이드
+
+```bash
+npx expo prebuild --platform android
+cd android && ./gradlew assembleRelease      # 테스트용 APK
+cd android && ./gradlew bundleRelease        # Play 스토어용 AAB
+```
+
+- **Google 지도 키가 있어야 지도가 뜹니다.** 키가 없으면 앱이 지도 대신 **지역 직접 입력**을 보여 주므로 기능은 다 쓸 수 있습니다(가격 계산은 지역명만 있으면 됩니다).
+- 기본 설정은 **디버그 키로 서명**됩니다. 사이드로드 테스트에는 되지만 **Play 스토어에는 올릴 수 없습니다.** 업로드 키를 따로 만들어 `android/app/build.gradle`의 release 서명에 연결하거나 `eas build`의 자격 증명 관리를 쓰세요.
+- 알림은 `meal` 채널로 나갑니다.
+
 ## 알림과 위젯
 
 **알림** — 설정 > 알림을 켜면 식단 기간만큼 하루 한 번, 그날 먹을 메뉴를 알려 줍니다. 기기 안에서만 뜨는 로컬 알림이라 서버가 필요 없습니다. 식단을 다시 짜면 예약도 함께 갱신됩니다.
