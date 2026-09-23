@@ -28,7 +28,10 @@ npx expo run:ios --device <기기 UDID> --configuration Release
   rsync -a --exclude '/ios/' --exclude '/.git/' --exclude '/.expo/' --exclude '/web-preview/' \
     ~/Desktop/뭐먹지/ ~/Desktop/mwomeokji-build/
   ```
-- **Ruby 2.6**에는 `Enumerable#filter_map`(2.7 도입)이 없어 Expo의 CocoaPods 스크립트가 멈춥니다. Ruby 3.x를 쓰거나, `pod install` 동안만 그 메서드를 채워 넣으면 됩니다.
+- **Ruby 2.6**에는 `Enumerable#filter_map`(2.7 도입)이 없어 Expo의 CocoaPods 스크립트가 멈춥니다. Ruby 3.x를 쓰거나, 아래처럼 보정 파일을 물려 돌리면 됩니다.
+  ```bash
+  cd ios && RUBYOPT="-r$(pwd)/../scripts/ruby26-shim.rb" pod install
+  ```
 
 **설치되는 앱으로 만들기** — 스토어 없이 폰에 직접 설치하려면:
 
