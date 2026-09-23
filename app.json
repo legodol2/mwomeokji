@@ -10,7 +10,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.mwomeokji.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다.",
+        "NSLocationWhenInUseUsageDescription": "사는 지역(시·군·구)을 알아내 그 지역 기준으로 장보기 가격을 계산하는 데만 씁니다. 위치는 기기 안에만 저장되고 어디에도 보내지 않습니다.",
         "UIApplicationSceneManifest": {
           "UIApplicationSupportsMultipleScenes": false,
           "UISceneConfigurations": {
@@ -46,7 +46,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "근처 마트를 찾아 장보기 가격을 계산하려고 현재 위치를 씁니다."
+          "locationWhenInUsePermission": "사는 지역(시·군·구)을 알아내 그 지역 기준으로 장보기 가격을 계산하는 데만 씁니다. 위치는 기기 안에만 저장되고 어디에도 보내지 않습니다."
         }
       ],
       "./plugins/withSceneDelegate",

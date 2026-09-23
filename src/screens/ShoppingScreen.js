@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { ING, AISLES, MART, TIERS } from '../data';
 import { won, qty } from '../engine';
 import { leftovers, storageTips } from '../advice';
-import { Label, Bar, Seg, PrimaryButton, TextButton, EmptyState } from '../ui';
+import { Label, Bar, Seg, PrimaryButton, TextButton, EmptyState, Notice } from '../ui';
 import { sp, radius, type, num } from '../theme';
 
 function Check({ on, t }){
@@ -64,6 +64,9 @@ export default function ShoppingScreen({ bill, cfg, mode, setMode, cartMeals, ha
             <Text style={[type.body,{ color:t.ink2 }]}>/ {won(bill.total)}원 담음</Text>
           </View>
           <View style={{ marginTop:sp.m }}><Bar t={t} height={4} pct={pct} /></View>
+          <Notice t={t} style={{ marginTop:sp.l }}>
+            금액은 매장에서 조사한 값이 아니라 통상 시세로 어림한 추정치입니다. 실제 가격은 행사·산지·시기에 따라 다릅니다.
+          </Notice>
         </View>
 
         {mode === 'cart' && bill.items && (

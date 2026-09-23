@@ -78,7 +78,7 @@ export default function LocationPicker({ t, firstRun, initial, onDone, onCancel 
           {firstRun ? '어디서 장 보세요?' : '위치 다시 정하기'}
         </Text>
         <Text style={[type.body,{ color:t.ink3, marginTop:sp.s, lineHeight:23 }]}>
-          지도를 눌러 핀을 찍으면 그 동네에 있는 마트로 가격을 계산합니다.
+          핀을 찍은 지역(시·군·구)을 기준으로 장보기 가격을 계산합니다. 실제 매장을 찾아 주지는 않습니다.
         </Text>
       </View>
 
@@ -120,7 +120,7 @@ export default function LocationPicker({ t, firstRun, initial, onDone, onCancel 
           </Text>
           {reg && (
             <Text style={[type.caption,{ color:t.ink3, marginTop:4 }]}>
-              {reg.n} 기준 · 장 볼 곳 {shops}곳 ({reg.m.slice(0,3).map(k=>MART[k].n).join(', ')}…)
+              {reg.n} 기준 · 이 지역에 흔한 매장 {shops}가지 ({reg.m.slice(0,3).map(k=>MART[k].n).join(', ')}…)
             </Text>
           )}
           {denied && (

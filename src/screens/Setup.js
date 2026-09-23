@@ -90,7 +90,7 @@ export default function Setup({ st, set, result, t, onOpenMap, onRestart }){
       </Section>
 
       <Section id="mart" summary={picked.length ? `${MART[result.cfg.mart].n}${picked.length>1 ? ` 외 ${picked.length-1}곳` : ''}` : '전체'} title="자주 가는 마트"
-        hint={`여러 곳을 고르면 그중 가장 싼 곳으로 계산합니다. 지금은 ${MART[result.cfg.mart].n} 기준. 마트별 금액은 실제 조사값이 아닌 추정치입니다.`}>
+        hint={`여러 곳을 고르면 그중 가장 싼 곳으로 계산합니다. 지금은 ${MART[result.cfg.mart].n} 기준. 마트별 금액은 매장에서 조사한 값이 아닌 추정치이고, 실제 매장 위치를 확인한 것도 아닙니다.`}>
         <Pressable onPress={()=>set(s=>({ ...s, marts: picked.length === marts.length ? [] : [...marts] }))}
           style={({pressed})=>({ alignSelf:'flex-start', marginBottom:sp.s, paddingHorizontal:14, paddingVertical:8,
             borderRadius:radius.pill, backgroundColor:t.surface, opacity:pressed?0.6:1 })}>

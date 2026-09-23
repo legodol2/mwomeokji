@@ -203,7 +203,7 @@ const R = [
  {id:'crr',e:'🍛',n:'카레라이스',c:'일식',t:35,sp:1,q:0,tools:['pot','knife',['rice','pot']],
   ing:{rice:130,curry:40,potato:120,carrot:60,onion:80,pork:100},
   steps:['고기와 양파를 볶다가 감자·당근을 넣는다.','물 400ml를 붓고 채소가 익을 때까지 끓인다.','불을 줄이고 카레가루를 풀어 5분 더 저으며 끓인다.']},
- {id:'tmd',e:'🥫',n:'참치마요 덮밥',c:'일식',t:10,sp:0,q:1,tools:[['rice','micro','pot']],
+ {id:'tmd',e:'🍚',n:'참치마요 덮밥',c:'일식',t:10,sp:0,q:1,tools:[['rice','micro','pot']],
   ing:{rice:130,tunacan:100,mayo:25,soysauce:10,gim:3,egg:1},
   steps:['참치캔 기름을 따라내고 마요네즈·간장에 버무린다.','따뜻한 밥 위에 얹는다.','계란프라이와 잘게 자른 김을 올린다.']},
  {id:'mpd',e:'🌶️',n:'마파두부 덮밥',c:'중식',t:20,sp:2,q:1,tools:['pan',['rice','pot','micro']],

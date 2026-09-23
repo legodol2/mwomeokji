@@ -51,7 +51,7 @@ export default function Onboarding({ draft, setDraft, t, onFinish }){
             {step === 1 && (
               <>
                 <Head title="어느 마트에 가세요?"
-                  hint={`${reg.n}에서 갈 수 있는 곳입니다. 여러 곳을 고르면 그중 가장 싼 곳으로 계산합니다. 마트별 가격은 실제 조사값이 아닌 추정치입니다.`} />
+                  hint={`${reg.n}에서 흔한 매장 유형입니다. 실제 매장 위치를 확인한 것은 아닙니다. 여러 곳을 고르면 그중 가장 싼 곳으로 계산하며, 마트별 금액은 매장에서 조사한 값이 아닌 추정치입니다.`} />
                 <Pressable onPress={()=>setDraft(d=>({ ...d, marts: d.marts.length === reg.m.length ? [] : [...reg.m] }))}
                   style={({pressed})=>({ alignSelf:'flex-start', marginBottom:sp.s, paddingHorizontal:14, paddingVertical:8,
                     borderRadius:radius.pill, backgroundColor:t.surface, opacity:pressed?0.6:1 })}>

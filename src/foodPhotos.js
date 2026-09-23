@@ -1,6 +1,6 @@
 /* 요리 사진 — 위키미디어 공용의 자유 라이선스 사진만 담았다.
    출처와 라이선스는 assets/food/credits.json, 앱에서는 설정 > 사진 출처에서 볼 수 있다.
-   사진을 바꾸려면 assets/food/<레시피id>.jpg 를 갈아 끼우면 된다. */
+   맞는 사진을 못 찾은 요리는 여기 없고, 대신 이모지가 뜬다. */
 import CREDITS from '../assets/food/credits.json';
 
 export const PHOTOS = {
@@ -41,7 +41,6 @@ export const PHOTOS = {
   tds: require('../assets/food/tds.jpg'),
   tge: require('../assets/food/tge.jpg'),
   tgk: require('../assets/food/tgk.jpg'),
-  tmd: require('../assets/food/tmd.jpg'),
   tps: require('../assets/food/tps.jpg'),
   udn: require('../assets/food/udn.jpg'),
   ykd: require('../assets/food/ykd.jpg'),

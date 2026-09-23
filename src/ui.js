@@ -163,6 +163,17 @@ export function TextButton({ t, label, onPress, style, tone }){
   );
 }
 
+/* 알아 둬야 할 것을 조용히, 그러나 보이는 자리에 */
+export function Notice({ t, children, style }){
+  return (
+    <View style={[{ flexDirection:'row', gap:8, backgroundColor:t.surface, borderRadius:radius.md,
+                    paddingHorizontal:14, paddingVertical:11 }, style]}>
+      <Text style={{ color:t.ink3, fontSize:12.5, lineHeight:18 }}>ⓘ</Text>
+      <Text style={{ color:t.ink3, fontSize:12.5, lineHeight:18, flex:1 }}>{children}</Text>
+    </View>
+  );
+}
+
 /* 아무것도 없을 때 무엇을 하면 되는지 */
 export function EmptyState({ t, title, body, action }){
   return (
